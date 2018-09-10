@@ -100,6 +100,8 @@ public:
 
     void    shouldClose();
 
+    static bool isContextActive();
+
 
 private:
     /**

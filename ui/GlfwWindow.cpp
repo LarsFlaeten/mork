@@ -1,46 +1,6 @@
-/*
- * Ork: a small object-oriented OpenGL Rendering Kernel.
- * Website : http://ork.gforge.inria.fr/
- * Copyright (c) 2008-2015 INRIA - LJK (CNRS - Grenoble University)
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, 
- * this list of conditions and the following disclaimer.
- * 
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- * this list of conditions and the following disclaimer in the documentation 
- * and/or other materials provided with the distribution.
- * 
- * 3. Neither the name of the copyright holder nor the names of its contributors 
- * may be used to endorse or promote products derived from this software without 
- * specific prior written permission.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-/*
- * Ork is distributed under the BSD3 Licence. 
- * For any assistance, feedback and remarks, you can check out the 
- * mailing list on the project page : 
- * http://ork.gforge.inria.fr/
- */
-/*
- * Main authors: Eric Bruneton, Antoine Begault, Guillaume Piolat.
- */
-
 #include "mork/ui/GlfwWindow.h"
 #include "mork/core/Log.h"
+#include "mork/core/DebugMessageCallback.h"
 
 #include <assert.h>
 #include <stdexcept>
@@ -51,6 +11,20 @@ using namespace std;
 
 namespace mork
 {
+
+// Utility function to check wether there is an active context
+bool GlfwWindow::isContextActive() {
+    bool isActive = true;
+    try {
+        GLFWwindow* w = glfwGetCurrentContext();
+    } catch (std::runtime_error) {
+        isActive = false;
+    }
+
+    return isActive;
+}
+
+
 
 
 GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHandle(NULL)
@@ -74,8 +48,13 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, ver.y);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifndef NDEBUG
+    info_logger("Creating debug context");
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#else
+    info_logger("Not creating debug context");
+#endif
 
-    
     GLFWwindow* gwd = glfwCreateWindow(params.width(), params.height(), params.name().c_str(), NULL, NULL);
     glfwWindowHandle = (void*)gwd;
 
@@ -135,23 +114,17 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
         error_logger("UI: Failed to initialize GLAD");
         throw std::runtime_error("");
     }    
- 
 
-    //assert(glGetError() == 0);
+    GLint flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+	if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+	{
+    	debug_logger("Registering OpenGL debug callbak..");
+		glEnable(GL_DEBUG_OUTPUT);
+    	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); 
+    	glDebugMessageCallback(debugMessageCallback, nullptr);
+    	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+	}
     
-
-//    if (params.debug()) {
-//        assert(glDebugMessageCallbackARB != NULL);
-//        glDebugMessageCallbackARB(debugCallback, NULL);
-//    }
-    
-    
-    // Lars F addtion 16.05.2016
-    //assert(glGetError()==0);
-    //glGenVertexArrays(1, &vao);
-    //glBindVertexArray(vao);
-    //assert(glGetError()==0);
-
     // do immeadiate swap
     //this->waitForVSync(false);
 
@@ -159,9 +132,7 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
 
 GlfwWindow::~GlfwWindow()
 {
-    // Lars F addition 16.05.2016
-    //glDeleteVertexArrays(1, &vao);
-
+    glfwTerminate();
 }    
 
 
