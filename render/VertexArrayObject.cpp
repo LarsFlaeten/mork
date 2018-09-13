@@ -19,12 +19,12 @@ VertexArrayObject::~VertexArrayObject() {
     }
 }
 
-void VertexArrayObject::bind() {
+void VertexArrayObject::bind() const {
     glBindVertexArray(VAO);
     
 }
 
-void VertexArrayObject::unbind() {
+void VertexArrayObject::unbind() const {
     glBindVertexArray(0);
 }
 

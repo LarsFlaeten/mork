@@ -10,8 +10,8 @@ public:
     VertexArrayObject();
     virtual ~VertexArrayObject();
 
-    virtual void bind();
-    virtual void unbind();
+    virtual void bind() const;
+    virtual void unbind() const;
 
 private:
     unsigned int VAO;
