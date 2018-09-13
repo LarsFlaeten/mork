@@ -17,8 +17,8 @@ public:
 
     // TODO: remove and move use program to frambuffer
     void    use() const;
-protected:
-    int getProgramId() const;
+//protected:
+    int getProgramID() const;
 
 private:
     int _programId;

@@ -79,7 +79,7 @@ void    Program::use() const
  
 }
 
-int Program::getProgramId() const
+int Program::getProgramID() const
 {
     return _programId;
 }
