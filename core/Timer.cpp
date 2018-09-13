@@ -58,6 +58,15 @@ int Timer::getNumCycles() const
 
 double Timer::getTime()
 {
+    if(!running)
+        start();
+
+    std::chrono::duration<double> duration = std::chrono::steady_clock::now() - t;
+    return duration.count();    
+}
+
+double Timer::getDuration()
+{
     return lastDuration.count();
 }
 

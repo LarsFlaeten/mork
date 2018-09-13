@@ -34,9 +34,16 @@ public:
     virtual double end();
 
     /**
-     * Returns the delay recorded at the last end() call in seconds.
+     * Returns the current time since start in seconds. If timer is not running,
+     * it will be started.
      */
     virtual double getTime();
+
+
+    /**
+     * Returns the delay recorded at the last end() call in seconds.
+     */
+    virtual double getDuration();
 
     /**
      * Returns the average delay at every call to #end() in micro seconds.
