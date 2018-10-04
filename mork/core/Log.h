@@ -72,7 +72,7 @@ namespace mork
     inline std::ofstream error_out("info.log");
     inline log_stream error_logger("ERROR", error_out);
     inline std::ofstream debug_out("debug.log");
-    inline log_stream debug_logger("DEBUG", info_out);
+    inline log_stream debug_logger("DEBUG", debug_out);
 
 
 
