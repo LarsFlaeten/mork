@@ -4,9 +4,10 @@ set(LIBNAME "mork")
 message(STATUS "****    MORK    ****")
 message(STATUS "PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
 
-include_directories(${SIMULATOR_SOURCES} ${PROJECT_SOURCE_DIR}/src)
-
 file(GLOB SOURCE_FILES *.cpp */*.cpp */*.c)
+
+include_directories(${PROJECT_SOURCE_DIR})
+
 
 # Libraries
 set(LIBS "")
@@ -22,6 +23,7 @@ endif(BUILD_SHARED)
 
 # Create a static library
 add_library(${LIBNAME} ${LIBTYPE} ${SOURCE_FILES})
+set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
 target_link_libraries(${LIBNAME} ${LIBS} glfw3 GL X11 pthread Xrandr Xi dl)
 
 # Adds SO Version and subversion. To be added to ensure ABI/API compatibility.
