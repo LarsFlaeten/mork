@@ -2,6 +2,9 @@
 #define _MORK_PROGRAM_H_
 
 #include <string>
+#include <unordered_map>
+
+#include "mork/render/Uniform.h"
 
 namespace mork {
 
@@ -15,13 +18,24 @@ public:
     
     ~Program();
 
-    // TODO: remove and move use program to frambuffer
+    void buildShaders(const std::string& vssrc, const std::string& fssrc);
+ 
+    // TODO: remove and move use program to frambuffer?
     void    use() const;
-//protected:
+    
+    const Uniform& getUniform(const std::string& name);
+    
+    //protected:
     int getProgramID() const;
 
 private:
-    int _programId;
+
+    int _programID;
+    int _vs;
+    int _fs;
+    
+    std::unordered_map<std::string, Uniform> uniforms;
+
 };
 
 

@@ -1,10 +1,11 @@
 #ifndef _MORK_VERTEXBUFFER_H_
 #define _MORK_VERTEXBUFFER_H_
+#include "mork/math/vec2.h"
+#include "mork/math/vec3.h"
+#include "mork/math/vec4.h"
 #include "mork/render/GPUBuffer.h"
 
 namespace mork {
-//template<typename vertex> 
-//using VertexBuffer = GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_STATIC_DRAW>;
 
 template<typename vertex>
 class VertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_STATIC_DRAW> {
@@ -16,52 +17,69 @@ class VertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_STATIC_DRAW> {
 };
 
 
-    /*
-public:
-    VertexBuffer() {
-        glGenBuffers(1, &vbo);
+struct vertex_pos {
+    mork::vec3f   pos;
+
+    vertex_pos(const mork::vec3f& p) {pos = p;};
+
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
     }
+};
 
-    virtual ~VertexBuffer() {
-        // TODO: Change method of establishing active context
-        // (do not use GLFWWindow)
-        if(GlfwWindow::isContextActive())
-        {
-            unbind();
-            glDeleteBuffers(1, &vbo);
-        }   
+struct vertex_pos_uv {
+    mork::vec3f   pos;
+    mork::vec2f   uv;
+    vertex_pos_uv(const mork::vec3f& p, mork::vec2f u) {pos = p; uv = u;};
 
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+        glEnableVertexAttribArray(1);
     }
+};
 
-    virtual void setData(std::vector<vertex> vertices) {
-        this->bind();
-        this->vertices = vertices; 
-        glBufferData(GL_ARRAY_BUFFER, this->getSize(), &vertices[0] , GL_STATIC_DRAW);
-    
-        vertex::setAttributes();
+
+struct vertex_pos_col {
+    mork::vec3f   pos;
+    mork::vec4f   col;
+
+    vertex_pos_col(const mork::vec3f& p, const mork::vec4f& c) : pos(p), col(c) {};
+
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3*sizeof(float)));
+        glEnableVertexAttribArray(1);
     }
+};
 
+struct vertex_pos_col_uv {
+    mork::vec3f     pos;
+    mork::vec4f     col;
+    mork::vec2f     uv;
 
+    vertex_pos_col_uv(const mork::vec3f& p, const mork::vec4f& c, const mork::vec2f u) : pos(p), col(c), uv(u) {};
 
-    virtual void bind() {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3*sizeof(float)));
+        glEnableVertexAttribArray(1);
+        
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7*sizeof(float)));
+        glEnableVertexAttribArray(2);
     }
+};
 
-    virtual void unbind() {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
 
-private:
-    GLsizeiptr getSize() {
-        return this->vertices.size()*sizeof(vertex);
-    }
 
-    std::vector<vertex> vertices;
-    unsigned int vbo;
 
-}; 
-*/
 }
 
 #endif
