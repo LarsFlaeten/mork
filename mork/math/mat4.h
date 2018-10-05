@@ -217,7 +217,7 @@ public:
      * Returns the rotation matrix corresponding to the rotation around the x
      * axis with the given angle.
      *
-     * @param angle rotation angle in degrees.
+     * @param angle rotation angle in radians.
      */
     static mat4 rotatex(type angle);
 
@@ -225,7 +225,7 @@ public:
      * Returns the rotation matrix corresponding to the rotation around the y
      * axis with the given angle.
      *
-     * @param angle rotation angle in degrees.
+     * @param angle rotation angle in radians.
      */
     static mat4 rotatey(type angle);
 
@@ -233,7 +233,7 @@ public:
      * Returns the rotation matrix corresponding to the rotation around the z
      * axis with the given angle.
      *
-     * @param angle rotation angle in degrees.
+     * @param angle rotation angle in radians.
      */
     static mat4 rotatez(type angle);
 
@@ -241,7 +241,7 @@ public:
      * Returns the perspective projection matrix corresponding to the given
      * projection parameters.
      *
-     * @param fovy vertical field of view in degrees.
+     * @param fovy vertical field of view in radians.
      * @param aspect aspect ratio of the projection window.
      * @param zNear near clipping plane.
      * @param zFar far clipping plane.
@@ -642,8 +642,8 @@ inline mat4<type> mat4<type>::scale(const vec3<type> &v)
 template <typename type>
 inline mat4<type> mat4<type>::rotatex(type angle)
 {
-    type ca = (type) cos(angle * M_PI / 180.0);
-    type sa = (type) sin(angle * M_PI / 180.0);
+    type ca = (type) cos(angle);
+    type sa = (type) sin(angle);
     return mat4<type>(1, 0, 0, 0,
                       0, ca, -sa, 0,
                       0, sa, ca, 0,
@@ -653,8 +653,8 @@ inline mat4<type> mat4<type>::rotatex(type angle)
 template <typename type>
 inline mat4<type> mat4<type>::rotatey(type angle)
 {
-    type ca = (type) cos(angle * M_PI / 180.0);
-    type sa = (type) sin(angle * M_PI / 180.0);
+    type ca = (type) cos(angle);
+    type sa = (type) sin(angle);
     return mat4<type>(ca, 0, sa, 0,
                       0, 1, 0, 0,
                       -sa, 0, ca, 0,
@@ -664,8 +664,8 @@ inline mat4<type> mat4<type>::rotatey(type angle)
 template <typename type>
 inline mat4<type> mat4<type>::rotatez(type angle)
 {
-    type ca = (type) cos(angle * M_PI / 180.0);
-    type sa = (type) sin(angle * M_PI / 180.0);
+    type ca = (type) cos(angle);
+    type sa = (type) sin(angle);
     return mat4<type>(ca, -sa, 0, 0,
                       sa, ca, 0, 0,
                       0, 0, 1, 0,
@@ -675,7 +675,7 @@ inline mat4<type> mat4<type>::rotatez(type angle)
 template <typename type>
 inline mat4<type> mat4<type>::perspectiveProjection(type fovy, type aspect, type zNear, type zFar)
 {
-    type f = (type) 1 / tan(radians(fovy) / 2);
+    type f = (type) 1 / tan(fovy / 2);
     return mat4<type>(f / aspect, 0, 0,                         0,
                       0,        f, 0,                         0,
                       0,        0, (zFar + zNear) / (zNear - zFar), (2*zFar*zNear) / (zNear - zFar),
