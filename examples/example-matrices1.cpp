@@ -98,7 +98,7 @@ public:
         double timeValue = timer.getTime();
       
         mork::mat4f scale = mork::mat4f::scale(mork::vec3f(0.5, 0.5, 1.0));
-        mork::mat4f rot = mork::mat4f::rotatez(timeValue*180/M_PI);
+        mork::mat4f rot = mork::mat4f::rotatez(timeValue);
 
         prog.getUniform("transform").set(rot*scale);
         prog.use();
