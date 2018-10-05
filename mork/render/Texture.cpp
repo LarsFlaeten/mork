@@ -51,20 +51,22 @@ namespace mork {
         }
 
         // Set default texture wrapping/filtering option
+        // TODO: Make options for ajusting wrapping and min/mag filtering
         bind();
+        
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         if(generate_mip)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         else
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  
         
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
         auto format = td.numChannels==4 ? GL_RGBA : ( td.numChannels==3 ? GL_RGB : 0);
 
         glTexImage2D(GL_TEXTURE_2D, 0, format, td.width, td.height, 0, format, GL_UNSIGNED_BYTE, data);
