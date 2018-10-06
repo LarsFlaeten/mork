@@ -42,6 +42,8 @@
 #ifndef _MORK_VEC4_H_
 #define _MORK_VEC4_H_
 
+#include <sstream>
+
 #include "mork/math/vec3.h"
 
 namespace mork
@@ -506,6 +508,13 @@ template <typename scalarType, typename vecType>
 inline mork::vec4<vecType> operator*(const scalarType scalar, const mork::vec4<vecType> &v)
 {
   return v * static_cast<vecType>(scalar);
+}
+
+template < class T >
+std::ostream& operator << (std::ostream& os, const mork::vec4<T>& v)
+{
+        os << "[" << v.x << " " << v.y << " " << v.z << " " << v.w << "]";
+        return os;
 }
 
 #endif

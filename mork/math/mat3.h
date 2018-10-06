@@ -545,4 +545,20 @@ inline mork::mat3<matType> operator*(const scalarType scalar, const mork::mat3<m
   return m * static_cast<matType>(scalar);
 }
 
+
+template < class T >
+std::ostream& operator << (std::ostream& os, const mork::mat3<T>& m)
+{
+    mork::vec3<T> v;
+    for(int i = 0; i < 3; i++)
+    {
+        v = m[i];
+        os << "[" << v.x << " " << v.y << " " << v.z << "]\n";
+    }
+
+    return os;
+}
+
+
+
 #endif

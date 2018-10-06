@@ -43,6 +43,8 @@
 #define _MORK_VEC3_H_
 
 #include <cassert>
+#include <sstream>
+
 
 #include "pmath.h"
 
@@ -510,6 +512,13 @@ template <typename scalarType, typename vecType>
 inline mork::vec3<vecType> operator*(const scalarType scalar, const mork::vec3<vecType> &v)
 {
   return v * static_cast<vecType>(scalar);
+}
+
+template < class T >
+std::ostream& operator << (std::ostream& os, const mork::vec3<T>& v)
+{
+        os << "[" << v.x << " " << v.y << " " << v.z << "]";
+        return os;
 }
 
 #endif
