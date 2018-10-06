@@ -76,4 +76,17 @@ TEST_F(Mat4Test, ScaleTranslate)
 
 }
 
+TEST_F(Mat4Test, Translate)
+{
+    mork::vec3d tv = mork::vec3d(1,2,3);
+    mork::mat4d trans = mork::mat4d::translate(tv);
 
+    mork::vec3d tv2 = trans.translation();
+    ASSERT_EQ(tv, tv2);
+
+
+
+
+
+
+}
