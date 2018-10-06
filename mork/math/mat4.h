@@ -42,6 +42,9 @@
 #ifndef _MORK_MAT4_H_
 #define _MORK_MAT4_H_
 
+#include <sstream>
+
+
 #include "mork/math/vec2.h"
 #include "mork/math/vec3.h"
 #include "mork/math/vec4.h"
@@ -194,6 +197,11 @@ public:
      * Returns the linear part of this matrix (i.e. without translations).
      */
     mat3<type> mat3x3() const;
+
+    /**
+     * Returns the translation part of this matrix (i.e. without rotation).
+     */
+    vec3<type> translation() const;
 
     /**
      * Returns the determinant of this matrix.
@@ -612,6 +620,13 @@ mat3<type> mat4<type>::mat3x3() const
 }
 
 template <typename type>
+vec3<type> mat4<type>::translation() const
+{
+    return vec3<type>(m[0][3], m[1][3], m[2][3]);
+}
+
+
+template <typename type>
 type mat4<type>::determinant() const
 {
     return (type)(    m[0][0] * MINOR(*this, 1, 2, 3, 1, 2, 3) -
@@ -720,4 +735,16 @@ inline mork::mat4<matType> operator*(const scalarType scalar, const mork::mat4<m
   return m * static_cast<matType>(scalar);
 }
 
+template < class T >
+std::ostream& operator << (std::ostream& os, const mork::mat4<T>& m)
+{
+    mork::vec4<T> v;
+    for(int i = 0; i < 4; i++)
+    {
+        v = m[i];
+        os << "[" << v.x << " " << v.y << " " << v.z << " " << v.w << "]\n";
+    }
+
+    return os;
+}
 #endif
