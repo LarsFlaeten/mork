@@ -3,12 +3,12 @@
 #include "../mork/math/mat4.h"
 
 
-
 #include <gtest/gtest.h>
 
 using mork::SceneNode;
 using mork::mat4d;
 using mork::vec3d;
+using mork::vec4d;
 using mork::Scene;
 
 class SceneNodeTest : public ::testing::Test {
@@ -125,6 +125,55 @@ TEST_F(SceneNodeTest, WorldLocal2)
     ASSERT_LT((object->getLocalToWorld()*vec3d(0,0,0)).length(), 1.0E-10);
 }
 
+TEST_F(SceneNodeTest, WorldLocal3)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(10,0,0))*mat4d::rotatez(radians(90.0)));
+    scene.getRoot().addChild(object);
+
+    std::shared_ptr<SceneNode> object2 = std::make_shared<SceneNode>();
+    object2->setLocalToParent(mat4d::translate(vec3d(0,5,10))*mat4d::rotatey(radians(90.0)));
+    scene.getRoot().addChild(object2);
+
+
+
+    
+    scene.update();
+
+
+    ASSERT_LT((object->getLocalToWorld()*vec3d(0,10,0)).length(), 1.0E-10);
+    ASSERT_LT((object2->getLocalToWorld()*vec3d(10,-5,0)).length(), 1.0E-10);
+}
+
+TEST_F(SceneNodeTest, WorldLocal4)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(0,10,0))*mat4d::rotatez(radians(90.0)));
+    scene.getRoot().addChild(object);
+
+    std::shared_ptr<SceneNode> object2 = std::make_shared<SceneNode>();
+    object2->setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(vec3d(10,0,0)));
+    scene.getRoot().addChild(object2);
+
+
+
+    
+    scene.update();
+
+
+    ASSERT_LT((object->getLocalToWorld()*vec4d(0,0,0,1) - object2->getLocalToWorld()*vec4d(0,0,0,1)).xyz().length(), 1.0E-10);
+}
+
+
+
 
 TEST_F(SceneNodeTest, Scene01) {
 
@@ -143,7 +192,7 @@ TEST_F(SceneNodeTest, Scene01) {
     
 }
 
-TEST_F(SceneNodeTest, Scene02) {
+TEST_F(SceneNodeTest, Scene02_sharedPtr_benchmark) {
 
     Scene scene;
     scene.getRoot().setLocalToParent(mat4d::translate(vec3d(2,3,4)));
@@ -159,7 +208,7 @@ TEST_F(SceneNodeTest, Scene02) {
     
 }
 
-TEST_F(SceneNodeTest, Scene03) {
+TEST_F(SceneNodeTest, Scene03_reference_stdmove_benchmark) {
 
     Scene scene;
     scene.getRoot().setLocalToParent(mat4d::translate(vec3d(2,3,4)));
