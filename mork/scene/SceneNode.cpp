@@ -7,7 +7,7 @@ namespace mork {
         : localToParent(mat4d::IDENTITY) {
     }
    
-    void SceneNode::addChild(std::shared_ptr<SceneNode>& child) {
+    void SceneNode::addChild(std::shared_ptr<SceneNode> child) {
         children.push_back(child);
     }
 

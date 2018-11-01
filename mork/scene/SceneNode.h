@@ -12,7 +12,7 @@ namespace mork {
         public:
             SceneNode();
             
-            virtual void addChild(std::shared_ptr<SceneNode>& child);
+            virtual void addChild(std::shared_ptr<SceneNode> child);
             virtual void addChild(SceneNode&& child);
 
 
