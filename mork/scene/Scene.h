@@ -5,6 +5,7 @@
 
 #include "mork/math/mat4.h" 
 #include "mork/scene/SceneNode.h"
+#include "mork/scene/Camera.h"
 
 namespace mork {
 
@@ -20,8 +21,12 @@ namespace mork {
 
             void    update();
 
+            void addCamera(std::shared_ptr<Camera> camera);
+
         private:
             SceneNode   root;            
+
+            std::vector<std::shared_ptr<Camera> > cameras;
 
     };
 
