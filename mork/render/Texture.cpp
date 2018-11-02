@@ -50,6 +50,12 @@ namespace mork {
            throw std::runtime_error("Error loading image, see logs");
         }
 
+        return loadTexture2D(texture, td, data, generate_mip);
+    }
+
+    TextureBase::TextureData TextureBase::loadTexture2D(unsigned int texture, const TextureData& td, unsigned char* data, bool generate_mip = true) {
+
+
         // Set default texture wrapping/filtering option
         // TODO: Make options for ajusting wrapping and min/mag filtering
         bind();
@@ -67,7 +73,10 @@ namespace mork {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
  
         
-        auto format = td.numChannels==4 ? GL_RGBA : ( td.numChannels==3 ? GL_RGB : 0);
+        auto format = td.numChannels==4 ? GL_RGBA :
+            ( td.numChannels==3 ? GL_RGB :
+             ( td.numChannels==1 ? GL_RED : 0)
+            );
 
         glTexImage2D(GL_TEXTURE_2D, 0, format, td.width, td.height, 0, format, GL_UNSIGNED_BYTE, data);
         if(generate_mip)

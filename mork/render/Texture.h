@@ -40,6 +40,8 @@ namespace mork {
 
         virtual TextureData loadTexture2D(unsigned int texture, const std::string& file, bool flip_vertical, bool generate_mip);
 
+        virtual TextureData loadTexture2D(unsigned int texture, const TextureData& td, unsigned char* data, bool generate_mip);
+
 
 
     };
@@ -62,6 +64,14 @@ namespace mork {
            
             virtual void loadTexture(const std::string& file, bool flip_vertical) {
                 td = loadTexture2D(texture, file, flip_vertical, true);
+            }
+             
+            virtual void loadTexture(int width, int height, int numChannels, unsigned char* data) {
+                TextureData td;
+                td.width = width;
+                td.height = height;
+                td.numChannels = numChannels;
+                td = loadTexture2D(texture, td, data, true);
             }
             
             virtual int getWidth() const {
