@@ -50,8 +50,13 @@ namespace mork {
            throw std::runtime_error("Error loading image, see logs");
         }
 
-        return loadTexture2D(texture, td, data, generate_mip);
-    }
+        td =  loadTexture2D(texture, td, data, generate_mip);
+        
+        stbi_image_free(data);
+
+        return td;
+
+   }
 
     TextureBase::TextureData TextureBase::loadTexture2D(unsigned int texture, const TextureData& td, unsigned char* data, bool generate_mip = true) {
 
@@ -85,8 +90,6 @@ namespace mork {
         unbind();
 
        
-
-        stbi_image_free(data);
 
         return td;
     }
