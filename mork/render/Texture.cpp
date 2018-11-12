@@ -12,8 +12,16 @@ namespace mork {
         glGenTextures(1, &texture);
     }
 
+    TextureBase::TextureBase(TextureBase&& other) : texture(other.texture) {
+        other.texture = 0;
+    }
+
 
     TextureBase::~TextureBase() {
+        // quick way out if texture == 0;
+        if(!texture)
+            return;
+
         // TODO: Change method of establishing active context
         // (do not use GLFWWindow)
         if(GlfwWindow::isContextActive())
