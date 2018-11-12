@@ -1,9 +1,11 @@
 #ifndef _MORK_GPURBUFFER_H_
 #define _MORK_GPURBUFFER_H_
 
+#include <vector>
+
 #include "mork/render/Bindable.h"
 #include "mork/glad/glad.h"
-
+#include "mork/ui/GlfwWindow.h"
 
 
 namespace mork {
@@ -35,6 +37,12 @@ namespace mork {
 
         virtual void setData(std::vector<T> data) {
             glNamedBufferData(bufptr, data.size()*sizeof(T), &data[0], usage);
+        }
+        
+        // Sets an empty buffer with the given size
+        // MOstly used with dynamic buffers at initialization
+        virtual void setBufferSize(size_t size) {
+            glNamedBufferData(bufptr, size, NULL, usage);
         }
     private:
 
