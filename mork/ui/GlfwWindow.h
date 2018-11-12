@@ -1,5 +1,5 @@
 #ifndef _MORK_GLFW_WINDOW_H_
-#define _MORK_GLLFW_WINDOW_H_
+#define _MORK_GLFW_WINDOW_H_
 
 #include <map>
 
