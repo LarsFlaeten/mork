@@ -14,6 +14,7 @@ namespace mork {
     public:
         TextureBase();
         virtual ~TextureBase();
+        TextureBase(TextureBase&& o);
 
         virtual void bind() const = 0;
         virtual void unbind() const = 0;
@@ -54,6 +55,18 @@ namespace mork {
     template<> class Texture<2> : public TextureBase
     {
         public:
+            Texture<2>() : TextureBase(){
+                td.width = 0;
+                td.height = 0;
+                td.numChannels = 0;
+            }
+
+            Texture<2>(Texture<2> && other) {
+                texture = other.texture;
+                other.texture = 0;
+                td = other.td;
+            }
+
             virtual void bind() const {
                 glBindTexture(GL_TEXTURE_2D, texture);
             }
