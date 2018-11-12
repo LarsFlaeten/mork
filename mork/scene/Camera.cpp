@@ -44,7 +44,7 @@ namespace mork {
         vec4d pos = this->getPosition();
         mat4d trans = mat4d::translate(-(pos.xyz()));
         
-        // We now have thew view matrix:
+        // We now have the view matrix (in parent reference frame):
         // https://learnopengl.com/Getting-started/Camera
         mat4d view = rot * trans;
 
