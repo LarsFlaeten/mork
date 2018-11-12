@@ -16,6 +16,15 @@ class VertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_STATIC_DRAW> {
 
 };
 
+template<typename vertex>
+class DynamicVertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW> {
+    public:
+        virtual void setAttributes() {
+            vertex::setAttributes();
+        }
+
+};
+
 
 struct vertex_pos {
     mork::vec3f   pos;
