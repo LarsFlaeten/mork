@@ -51,6 +51,36 @@ void CameraTest::TearDown()
 {
 }
 
+TEST_F(CameraTest, PropertiesTest)
+{
+
+    Camera c1;
+
+    ASSERT_EQ(c1.getFarClippingPlane(), 100.0);
+    ASSERT_EQ(c1.getNearClippingPlane(), 0.1);
+    ASSERT_EQ(c1.getAspectRatio(), 800.0/600.0);
+    ASSERT_EQ(c1.getFOV(), radians(45.0));
+
+    c1.setFOV(radians(30.0));
+    ASSERT_EQ(c1.getFOV(), radians(30.0));
+
+    c1.setAspectRatio(700.0, 600.0);
+    ASSERT_EQ(c1.getAspectRatio(), 700.0/600.0);
+
+    c1.setClippingPlanes(0.2, 200.0);
+    ASSERT_EQ(c1.getFarClippingPlane(), 200.0);
+    ASSERT_EQ(c1.getNearClippingPlane(), 0.2);
+
+  
+
+    mork::mat4d proj = mork::mat4d::perspectiveProjection(radians(30.0), 700.0/600.0, 0.2, 200);
+    ASSERT_EQ(proj, c1.getProjectionMatrix()); 
+ 
+
+
+}
+
+
 TEST_F(CameraTest, AbsPosTest)
 {
     Scene scene;
