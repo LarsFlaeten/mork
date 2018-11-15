@@ -52,8 +52,12 @@ void main()
         yAdvance = 0.0f;
 
     }
-    Font Font::createFont(const std::string& ttfPath) {
+    Font Font::createFont(const std::string& ttfPath, unsigned int size ) {
+        if(size < 4)
+            throw std::runtime_error("Size < 4 not allowed when creating fonts");
         Font font;
+        font.loadedSize = size;
+
 
         FT_Library ft;
         if (FT_Init_FreeType(&ft)) {
@@ -69,7 +73,7 @@ void main()
  
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
-        FT_Set_Pixel_Sizes(face, 0, 48); 
+        FT_Set_Pixel_Sizes(face, 0, size); 
 
         // Load the standard characters
         for(unsigned char c = 0; c < 128; ++c) {
@@ -113,7 +117,7 @@ void main()
     }
 
 
-    void Font::drawText(const std::string& text, float x, float y, float scale, const vec3f& color, const mat4f& projection) {
+    void Font::drawText(const std::string& text, float x, float y, float size, const vec3f& color, const mat4f& projection) {
         vao.bind();
         prog.use();        
         prog.getUniform("textColor").set(color);
@@ -122,6 +126,8 @@ void main()
 
         float base_x = x;
         float base_y = y;
+
+        float scale = size/loadedSize;
 
         for(auto c : text) {
             // Handle Carriage return and tab

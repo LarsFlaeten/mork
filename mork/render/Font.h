@@ -18,10 +18,14 @@ namespace mork {
     struct Font {
         Font();
 
-        void    drawText(const std::string& text, float x, float y, float scale,
+        // size = size in pixels of the rendered font
+        void    drawText(const std::string& text, float x, float y, float size,
                 const vec3f& color, const mat4f& projection);
         
-        static  Font createFont(const std::string& ttfPath);
+        // size = size in pixels to generate font textures. Larger number gives
+        //          improved resoluiont with large fonts at rendertime, but increases
+        //          texture usage
+        static  Font createFont(const std::string& ttfPath, unsigned int size = 48);
 
 
         private:
@@ -58,7 +62,7 @@ namespace mork {
         static std::string font_vs;
         static std::string font_ps;
  
-
+        float loadedSize;
     };
 
 

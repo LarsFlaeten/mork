@@ -45,9 +45,9 @@ public:
             } else
                 glDisable(GL_BLEND);
                 
-            font1.drawText("Ubuntu", 25.0f, 25.0f, 1.0f, mork::vec3f(1.0, 1.0, 1.0), proj);
-            font2.drawText("Liberation Sans", 400, 300, 0.4, mork::vec3f(1.0, 0.5, 0.5), proj);
-            font3.drawText("Liberation Mono\n\tTabbed text", 50, 300, 0.6, mork::vec3f(0.0, 0.5, 1.0), proj);
+            font1.drawText("Ubuntu", 25.0f, 25.0f, 48, mork::vec3f(1.0, 1.0, 1.0), proj);
+            font2.drawText("Liberation Sans", 400, 300, 20, mork::vec3f(1.0, 0.5, 0.5), proj);
+            font3.drawText("Liberation Mono\n\tTabbed text", 50, 300, 26, mork::vec3f(0.0, 0.5, 1.0), proj);
         
             
 
@@ -64,7 +64,7 @@ public:
 
 
 
-            font1.drawText(info.str(), 25.0f, this->getHeight()-20, 0.35, mork::vec3f(1.0, 0.0, 0.0), proj);
+            font1.drawText(info.str(), 25.0f, this->getHeight()-20, 16, mork::vec3f(1.0, 0.0, 0.0), proj);
         }
         GlfwWindow::redisplay(t, dt);
   
