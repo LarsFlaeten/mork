@@ -45,6 +45,11 @@ public:
 
     virtual void idle(bool damaged);
 
+    virtual double getFps() const;
+    virtual double getFrameTime() const;
+    virtual void fpsUpdatedEvent();
+
+    virtual void setWindowTitle(const std::string& title);
 
     /**
      * Tells the windowing system wether to wait for a vertical
@@ -103,6 +108,12 @@ private:
      */
     double dt;
 
+    /**
+     * Frame counter/fps related variables
+     */
+    double fps;
+    int frameCount;
+    double fps_t0;
     /**
      * Glfw callback that calls #redisplay on the active Window.
      */

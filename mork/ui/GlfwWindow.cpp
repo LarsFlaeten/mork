@@ -80,10 +80,12 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
     reshape(width, height);
 
     damaged = false;
-    timer.start();
-    t = 0.0;
+   t = 0.0;
     dt = 0.0;
 
+
+    fps = 0;
+    frameCount = 0;
     /*
      * TODO: Add possibility to go fullscreen
      */     
@@ -127,6 +129,11 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
     
     // do immeadiate swap
     //this->waitForVSync(false);
+    
+    
+    
+    timer.start();
+    fps_t0 = timer.end(); 
 
 }
 
@@ -187,6 +194,15 @@ void GlfwWindow::redisplay(double t, double dt)
     double newT = timer.end();
     this->dt = newT - this->t;
     this->t = newT;
+
+    ++frameCount;
+    double fps_dt = newT - fps_t0;
+    if(fps_dt >= 1.0) {
+        fps_t0 += fps_dt;
+        fps = frameCount/fps_dt;
+        frameCount = 0;
+        fpsUpdatedEvent();
+    }
 }
 
 void GlfwWindow::reshape(int x, int y)
@@ -207,6 +223,21 @@ void GlfwWindow::redisplayFunc()
     ////window->redisplay(window->t, window->dt);
 }
 
+double GlfwWindow::getFps() const {
+    return fps;
+}
+
+double GlfwWindow::getFrameTime() const {
+    if(fps>0.0)
+        return 1.0/fps;
+    else
+        return 0.0;
+}
+
+// Override to catch fps update events..
+void GlfwWindow::fpsUpdatedEvent() {
+
+}
 
 
 void GlfwWindow::reshapeFunc(GLFWwindow* window, int w, int h)
@@ -223,7 +254,6 @@ void GlfwWindow::reshapeFunc(GLFWwindow* window, int w, int h)
     //window->idle(glutLayerGet(GLUT_NORMAL_DAMAGED) == 1);
     gw->idle(window->damaged);
     gw->damaged = false;
-}
 */
 void GlfwWindow::mouseClickFunc(GLFWwindow* window, int mousebutton, int action, int mods)
 {
@@ -420,5 +450,10 @@ void    GlfwWindow::waitForVSync(bool wait)
         glfwSwapInterval(0);
 
 }
+
+void GlfwWindow::setWindowTitle(const std::string& title) {
+    glfwSetWindowTitle((GLFWwindow*)glfwWindowHandle, title.c_str());
+}
+
 
 }
