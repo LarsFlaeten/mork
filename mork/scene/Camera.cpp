@@ -3,6 +3,55 @@
 #include <stdexcept>
 
 namespace mork {
+    Camera::Camera() :
+    fov(radians(45.0)), aspect(800.0/600.0), near_clipping(0.1), far_clipping(100) {
+        updateProjection();    
+    }
+
+    Camera::Camera(double _fov, double _aspect, double _near, double _far) :
+        fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
+        updateProjection();
+    } 
+
+    mat4d Camera::getProjectionMatrix() const {
+        return projection;
+    }
+
+    // Set FOV (in radians)
+    void Camera::setFOV(double _fov) {
+        fov = _fov;
+        updateProjection();
+    }
+    // gets FOV in radians
+    double Camera::getFOV() const {
+        return fov;
+    }
+
+    void Camera::setAspectRatio(double width, double height) {
+        aspect = width / height;
+        updateProjection();
+    }
+    double Camera::getAspectRatio() const {
+        return aspect;
+    }
+
+    double Camera::getFarClippingPlane() const {
+        return far_clipping;
+    }
+
+    double Camera::getNearClippingPlane() const {
+        return near_clipping;
+    }
+    void Camera::setClippingPlanes(double _near, double _far) {
+        near_clipping = _near;
+        far_clipping = _far;
+        updateProjection();
+    }
+
+    void Camera::updateProjection() {
+        projection = mork::mat4d::perspectiveProjection(fov, aspect, near_clipping, far_clipping); 
+    }
+
 
     void Camera::addChild(std::shared_ptr<SceneNode>& child) {
         throw std::runtime_error("Not implemented");
