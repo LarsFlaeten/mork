@@ -27,6 +27,25 @@ Program::~Program()
     }   
 }
 
+Program::Program(Program&& o) {
+    _programID = o._programID;
+    o._programID = 0;
+
+}
+
+Program& Program::operator=(Program&& o) {
+    if(GlfwWindow::isContextActive())
+    {
+        if(_programID)
+            glDeleteProgram(_programID);
+    }   
+    
+    _programID = o._programID;
+    o._programID = 0;  
+
+}
+
+
 
 void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     // This will delete the program if it allready exist, and detach shaders

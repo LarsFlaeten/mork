@@ -18,6 +18,9 @@ public:
     
     ~Program();
 
+    Program(Program&& o);
+    Program& operator=(Program&& o);
+
     void buildShaders(const std::string& vssrc, const std::string& fssrc);
  
     // TODO: remove and move use program to frambuffer?

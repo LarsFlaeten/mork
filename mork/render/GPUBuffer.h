@@ -16,13 +16,34 @@ namespace mork {
         GPUBuffer() {
             glGenBuffers(1, &bufptr);
         }
+
+        GPUBuffer(GPUBuffer&& o) {
+            bufptr = o.bufptr;
+            o.bufptr = 0;
+
+        }
+
+        GPUBuffer& operator=(GPUBuffer&& o) {
+            if(GlfwWindow::isContextActive())
+            {
+                if(bufptr) {
+                    unbind();
+                    glDeleteBuffers(1, &bufptr);
+                }
+            }   
+            
+            bufptr = o.bufptr;
+            o.bufptr = 0;
+        }
         virtual ~GPUBuffer() {
             // TODO: Change method of establishing active context
             // (do not use GLFWWindow)
             if(GlfwWindow::isContextActive())
             {
-                unbind();
-                glDeleteBuffers(1, &bufptr);
+                if(bufptr) {
+                    unbind();
+                    glDeleteBuffers(1, &bufptr);
+                }
             }   
  
         }

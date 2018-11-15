@@ -5,10 +5,14 @@
 
 namespace mork {
 
+// A movable, but non-copyable OpenGl resource
 class VertexArrayObject : public Bindable {
 public:
     VertexArrayObject();
     virtual ~VertexArrayObject();
+    
+    VertexArrayObject(VertexArrayObject&& o);
+    VertexArrayObject& operator=(VertexArrayObject&& o);
 
     virtual void bind() const;
     virtual void unbind() const;
