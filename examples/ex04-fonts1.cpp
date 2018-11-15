@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <sstream>
 
 #include <cxxopts.hpp>
 
@@ -8,23 +9,25 @@
 #include "mork/core/Log.h"
 #include "mork/render/Program.h"
 #include "mork/render/VertexArrayObject.h"
-#include "mork/render/FontEngine.h"
+#include "mork/render/Font.h"
 using namespace std;
 
-
+static std::string window_title = "Fonts demo";
 
 class App : public mork::GlfwWindow {
 public:
     App()
-            : mork::GlfwWindow(mork::Window::Parameters().size(800,600))
+            : mork::GlfwWindow(mork::Window::Parameters().size(800,600).name(window_title))
             //prog(std::string(vertexShaderSource), std::string(fragmentShaderSource))
     {
-        mork::FontEngine::init();
 
-        font1 = mork::FontEngine::getFont("Ubuntu");
-        font2 = mork::FontEngine::getFont("Liberation Sans");
-        font3 = mork::FontEngine::getFont("Liberation Mono");
-
+        font1 = mork::Font::createFont("resources/fonts/Ubuntu-R.ttf");
+        font2 = mork::Font::createFont("resources/fonts/LiberationMono-Regular.ttf");
+        font3 = mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf");
+        
+        showText = true;
+        blend = true;
+        waitForVSync(false);
     }
 
     ~App() {
@@ -34,17 +37,35 @@ public:
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);    
 
+        if(showText) {
+            mork::mat4f proj = mork::mat4f::orthoProjection(this->getWidth(), 0.0f, this->getHeight(), 0.0f, -1.0f, 1.0f);
+            if(blend) {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            } else
+                glDisable(GL_BLEND);
+                
+            font1.drawText("Ubuntu", 25.0f, 25.0f, 1.0f, mork::vec3f(1.0, 1.0, 1.0), proj);
+            font2.drawText("Liberation Sans", 400, 300, 0.4, mork::vec3f(1.0, 0.5, 0.5), proj);
+            font3.drawText("Liberation Mono\n\tTabbed text", 50, 300, 0.6, mork::vec3f(0.0, 0.5, 1.0), proj);
         
-        mork::mat4f proj = mork::mat4f::orthoProjection(this->getWidth(), 0.0f, this->getHeight(), 0.0f, -1.0f, 1.0f);
-        mork::FontEngine::getProgram().use();
-        mork::FontEngine::getProgram().getUniform("projection").set(proj);
+            
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        font1.drawText("Ubuntu", 25.0f, 25.0f, 1.0f, mork::vec3f(1.0, 1.0, 1.0));
-        font2.drawText("Liberation Sans", 400, 300, 0.4, mork::vec3f(1.0, 0.5, 0.5));
-        font3.drawText("Liberation Mono", 50, 500, 0.6, mork::vec3f(0.0, 0.5, 1.0));
-   
+            std::stringstream info;
+            info << "Multiline text:\n";
+            info << "FPS: " << this->getFps() << ", frametime: " << this->getFrameTime() << "s\n";
+            info << "Key menu:(entries are tabbed)\n";
+            info << "\tPress [i] to toggle text\n";
+            info << "\tPress [b] to toggle blending\n";
+            info << "\tPress [ESC] to quit\n"; 
+            info << "Keys: ";
+            for(auto c: keys)
+                info << c.first << "[" << (int)c.first << "], ";
+
+
+
+            font1.drawText(info.str(), 25.0f, this->getHeight()-20, 0.35, mork::vec3f(1.0, 0.0, 0.0), proj);
+        }
         GlfwWindow::redisplay(t, dt);
   
     }
@@ -69,11 +90,44 @@ public:
         }
         return false;
     }
+
+    virtual bool keyTyped(unsigned char c, modifier m, int x, int y)
+    {
+        keys[c] = true;
+
+        switch (c) {
+        case 'I':
+            showText = !showText;             
+            return true;
+        case 'B':
+            blend = !blend;
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    virtual bool keyReleased(unsigned char c, modifier m, int x, int y) {
+        keys.erase(c);
+
+        return false;
+    }
+
+
+    virtual void fpsUpdatedEvent() {
+        std::stringstream os;
+        os << window_title + " (FPS: " << this->getFps() << ")";
+        this->setWindowTitle(os.str());
+
+    }
 private:
     mork::Timer timer;
     mork::Font  font1, font2, font3;
 
-
+    bool showText;
+    bool blend;
+    std::map<char, bool> keys;
     //mork::Program prog;    
  
 };

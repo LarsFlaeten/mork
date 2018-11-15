@@ -10,46 +10,55 @@
 
 #include "mork/render/VertexArrayObject.h"
 #include "mork/render/VertexBuffer.h"
+#include "mork/render/Program.h"
 
 namespace mork {
 
 
-    struct Glyph {
-
-        Glyph() {
-
-        }
-
-        Glyph(Glyph&& o) :
-            texture(std::move(o.texture)),
-            size(o.size),
-            bearing(o.bearing),
-            advance(o.advance)
-            { }
-
-
-        Texture<2>   texture;
-        vec2i       size;
-        vec2i       bearing;
-        unsigned int    advance;
-    };
-
     struct Font {
         Font();
 
+        void    drawText(const std::string& text, float x, float y, float scale,
+                const vec3f& color, const mat4f& projection);
         
+        static  Font createFont(const std::string& ttfPath);
 
-        void    drawText(const std::string& text, float x, float y, float scale, const vec3f& color);
-        
-    
-
-
-        std::map<char, std::shared_ptr<Glyph> > characters;
 
         private:
+        struct Glyph {
+
+            Glyph() {
+
+            }
+
+            Glyph(Glyph&& o) :
+                texture(std::move(o.texture)),
+                size(o.size),
+                bearing(o.bearing),
+                advance(o.advance)
+                {
+                    o.size = vec2i::ZERO;
+                    o.bearing = vec2i::ZERO;
+                    o.advance = 0;
+                }
+
+
+            Texture<2>   texture;
+            vec2i       size;
+            vec2i       bearing;
+            unsigned int    advance;
+        };
+
+        Program             prog;
         VertexArrayObject   vao;
         DynamicVertexBuffer<mork::vertex_pos_uv> vbo;
+        std::map<char, Glyph > characters;
+        float yMax, yMin, yAdvance;
+
+        static std::string font_vs;
+        static std::string font_ps;
  
+
     };
 
 
