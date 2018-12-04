@@ -67,6 +67,27 @@ struct vertex_pos_col {
     }
 };
 
+struct vertex_pos_norm_uv {
+    mork::vec3f     pos;
+    mork::vec3f     norm;
+    mork::vec2f     uv;
+
+    vertex_pos_norm_uv(const mork::vec3f& p, const mork::vec3f& n, const mork::vec2f u) : pos(p), norm(n), uv(u) {};
+
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
+        glEnableVertexAttribArray(1);
+        
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
+        glEnableVertexAttribArray(2);
+    }
+};
+
+
+
 struct vertex_pos_col_uv {
     mork::vec3f     pos;
     mork::vec4f     col;
