@@ -46,7 +46,8 @@ class App : public mork::GlfwWindow {
 public:
     App()
             : mork::GlfwWindow(mork::Window::Parameters().size(800,600).name(window_title)),
-               prog(std::string(vertexShaderSource), std::string(fragmentShaderSource))
+               prog(std::string(vertexShaderSource), std::string(fragmentShaderSource)),
+               font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48))
   {
         
         std::vector<mork::vertex_pos_uv> verts = {
@@ -113,7 +114,7 @@ public:
 
 
   
-        for(int i = 1; i <= 10; ++i) {
+        for(int i = 1; i <= 9; ++i) {
             nodes[i] = std::make_shared<mork::SceneNode>();
             scene.getRoot().addChild(nodes[i]);
         }
@@ -126,7 +127,9 @@ public:
         scene.addCamera(camera);
 
 
-
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+ 
         waitForVSync(false);
     }
 
@@ -144,7 +147,7 @@ public:
         for(auto& a : nodes) {
             int i = a.first;
             a.second->setLocalToParent(
-                mork::mat4d::translate(mork::vec3d(10.0, 2*i-11, 0))*mork::mat4d::rotatez(0.01*i*timeValue)*mork::mat4d::rotatey(0.1*i*timeValue)
+                mork::mat4d::translate(mork::vec3d(10.0, 2*i-10, 0))*mork::mat4d::rotatez(0.01*i*timeValue)*mork::mat4d::rotatey(0.1*i*timeValue)
                 );
         }
         scene.update();
@@ -160,6 +163,7 @@ public:
         for(auto& a : nodes) {
             mork::mat4d model = a.second->getLocalToWorld();
             mork::mat4f trans = (proj*view*model).cast<float>();
+            prog.use();
             prog.getUniform("transform").set(trans);
             if(camera->getReference() == a.second)
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 0.0, 0.0, 1.0));
@@ -167,7 +171,6 @@ public:
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 1.0, 1.0, 1.0));
             
             
-            prog.use();
             vao.bind();
             glActiveTexture(GL_TEXTURE0 + 0);
             tex1.bind();
@@ -179,9 +182,23 @@ public:
         // Draw 2D Text 
         glDisable(GL_DEPTH_TEST);
         
-        
+        mork::mat4f ortho = mork::mat4f::orthoProjection(this->getWidth(), 0.0f, this->getHeight(), 0.0f, -1.0f, 1.0f);
+
+        std::stringstream info;
+        info << "Multiline text:\n";
+        info << "FPS: " << this->getFps() << ", frametime: " << this->getFrameTime() << "s\n";
+        info << "Key menu:(entries are tabbed)\n";
+        info << "\tPress [0-9] to toggle focus object (0 = none)\n";
+        info << "\tPress [ESC] to quit\n"; 
+        info << "Keys: ";
+        for(auto c: keys)
+            info << c.first << "[" << (int)c.first << "], ";
+
+        font.drawText(info.str(), 25, this->getHeight()-50, 18, mork::vec3f(1.0, 1.0, 1.0), ortho);
 
 
+
+        font.drawText("Text", 25.0f, 25.0f, 18, mork::vec3f(1.0, 1.0, 1.0), ortho);
 
 
 
@@ -216,6 +233,18 @@ public:
     {
         keys[c] = true;
 
+        if(c >= 48 && c <= 57)
+        {
+            int obj = c-48;
+    
+            if(obj>0 && obj < 10)
+                camera->setReference(nodes[obj]);
+            else if(obj == 0)
+                camera->setReference(nullptr);
+
+            return true;
+
+        }
         return false;
     }
 
@@ -234,6 +263,8 @@ public:
     }
 private:
     mork::Timer timer;
+
+    mork::Font font;
 
     std::map<char, bool> keys;
 
