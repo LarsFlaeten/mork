@@ -33,11 +33,25 @@ namespace mork {
     void Uniform::set(const mork::mat4f& m) const {
         if(type!=GL_FLOAT_MAT4) {
             mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT_MAT4, "(GL_FOAT_MAT4)");
-            throw std::runtime_error("Tried setting vec4f on Uniform with different type");
+            throw std::runtime_error("Tried setting mat4f on Uniform with different type");
         }
         UniformHandler<mork::mat4f>::set(m, u_loc);
     }
  
-
-
+    void Uniform::set(const mork::mat3f& m) const {
+        if(type!=GL_FLOAT_MAT3) {
+            mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT_MAT3, "(GL_FOAT_MAT3)");
+            throw std::runtime_error("Tried setting mat3f on Uniform with different type");
+        }
+        UniformHandler<mork::mat3f>::set(m, u_loc);
+    }
+ 
+    void Uniform::set(const float& f) const {
+        if(type!=GL_FLOAT) {
+            mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT, "(GL_FOAT)");
+            throw std::runtime_error("Tried setting float on Uniform with different type");
+        }
+        UniformHandler<float>::set(f, u_loc);
+    }
+ 
 }

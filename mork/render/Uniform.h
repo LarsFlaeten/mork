@@ -25,6 +25,8 @@ namespace mork {
             void set(const vec4f& v) const;
             void set(const int& i) const;
             void set(const mat4f& m) const;
+            void set(const mat3f& m) const;
+            void set(const float& f) const;
         private:
             int type;
             int u_loc;
@@ -68,6 +70,24 @@ namespace mork {
             }
     };
 
+    template<> class UniformHandler<mork::mat3f>
+    {
+        public:
+            inline static void set(const mork::mat3f& m, int u_loc) {
+                // We transpose the matrix (param 3 = GL_TRUE) since
+                // mork::matX is row-major, but OpenGL is column-major.
+                glUniformMatrix3fv(u_loc, 1, GL_TRUE, m.coefficients());
+            }
+    };
+
+    template<> class UniformHandler<float>
+    {
+        public:
+            inline static void set(const float& f, int u_loc) {
+                glUniform1f(u_loc, f);
+            }
+
+    };
 
 }
 
