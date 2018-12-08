@@ -50,6 +50,7 @@ namespace mork {
 
     void Camera::updateProjection() {
         projection = mork::mat4d::perspectiveProjection(fov, aspect, near_clipping, far_clipping); 
+        
     }
 
 
@@ -122,10 +123,15 @@ namespace mork {
     void Camera::update() {
         // set this camera(node)s local to world by using its reference (if it exists)
         if(reference != nullptr) {
-            this->setLocalToWorld(reference->getLocalToWorld());
+            this->updateLocalToWorld(reference->getLocalToWorld());
         } else {
-            this->setLocalToWorld(mat4d::IDENTITY);
-        }       
+            this->updateLocalToWorld(mat4d::IDENTITY);
+        }
+
+        // Get world to Screen and compute frustum planes
+        worldToScreen = projection * this->getWorldToLocal();
+        worldFrustum.setPlanes(worldToScreen);
+
     }
 
     mat4d Camera::getViewMatrix() const {
@@ -140,5 +146,12 @@ namespace mork {
     std::shared_ptr<SceneNode> Camera::getReference() const {
         return reference;
     }
- 
+    
+    const Frustum& Camera::getWorldFrustum() const {
+        return worldFrustum;
+    }
+
+    const mat4d& Camera::getWorldToScreen() const {
+        return worldToScreen;
+    } 
 }

@@ -3,6 +3,8 @@
 
 #include "mork/scene/SceneNode.h"
 
+#include "mork/scene/Frustum.h"
+
 namespace mork {
 
     class Camera : public SceneNode {
@@ -38,6 +40,10 @@ namespace mork {
 
             virtual void setReference(std::shared_ptr<SceneNode> node);
             virtual std::shared_ptr<SceneNode> getReference() const;
+
+            virtual const Frustum& getWorldFrustum() const;
+
+            virtual const mat4d& getWorldToScreen() const;
         protected:
             virtual void updateProjection();
 
@@ -48,7 +54,10 @@ namespace mork {
 
             std::shared_ptr<SceneNode>  reference;
             
+            Frustum worldFrustum;            
+            
             mat4d projection;
+            mat4d worldToScreen;
             double fov, aspect, far_clipping, near_clipping;
     };
 
