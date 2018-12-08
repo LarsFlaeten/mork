@@ -169,7 +169,7 @@ public:
         scene.getRoot().addChild(lamp);
 
         camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.9));
+        camera->setFOV(radians(45.0));
         camera->setPosition(mork::vec4d(-12, 0, 0, 1));
         camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
         //camera->setReference(box);
