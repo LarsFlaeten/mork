@@ -161,7 +161,16 @@ template <typename type> struct box3
     box3<t> cast() {
         return box3<t>(xmin, xmax, ymin, ymax, zmin, zmax);
     }
+
+    // Box with zero size
+    static const box3 ZERO;
 };
+
+template <typename type>
+const box3<type> box3<type>::ZERO(
+    0, 0, 0, 0, 0, 0);
+
+
 
 /**
  * A 3D bounding box with int coordinates.

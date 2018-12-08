@@ -4,7 +4,8 @@
 namespace mork {
 
     SceneNode::SceneNode() 
-        : localToParent(mat4d::IDENTITY) {
+        : localToParent(mat4d::IDENTITY),
+            localBounds(box3d::ZERO) {
     }
    
     void SceneNode::addChild(std::shared_ptr<SceneNode> child) {
@@ -32,12 +33,30 @@ namespace mork {
         return localToWorld.inverse();
     }
 
+    vec3d   SceneNode::getWorldPos() const {
+        return worldPos;
+    }
 
-    void   SceneNode::setLocalToWorld(const mat4d& parentLocalToWorld) {
+    box3d   SceneNode::getWorldBounds() const {
+        return worldBounds;
+    }
+
+    void SceneNode::setLocalBounds(const box3d& bounds) {
+        localBounds = bounds;
+    }
+
+
+    void   SceneNode::updateLocalToWorld(const mat4d& parentLocalToWorld) {
         localToWorld = parentLocalToWorld*localToParent;
 
         for(auto& child : children)
-            child->setLocalToWorld(localToWorld);
+            child->updateLocalToWorld(localToWorld);
+
+        worldPos = localToWorld * vec3d::ZERO;
+
+        worldBounds = localToWorld * localBounds;
+        for(auto& child : children)
+           worldBounds = worldBounds.enlarge(child->getWorldBounds()); 
     }
 
 

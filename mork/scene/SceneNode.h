@@ -23,15 +23,27 @@ namespace mork {
             virtual mat4d   getLocalToWorld() const;
             virtual mat4d   getWorldToLocal() const;
 
+            virtual vec3d   getWorldPos() const;
 
-            virtual void    setLocalToWorld(const mat4d& parentLocalToWorld);
+            virtual box3d   getWorldBounds() const;
+
+            virtual void    setLocalBounds(const box3d& bounds);
+
+            virtual void    updateLocalToWorld(const mat4d& parentLocalToWorld);
 
         protected:
 
             mat4d   localToParent;
 
             mat4d   localToWorld;
-            
+
+            vec3d   worldPos;
+
+            box3d   localBounds;
+
+            box3d   worldBounds;
+
+
             std::vector<std::shared_ptr<SceneNode> > children;
 
            

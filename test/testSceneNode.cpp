@@ -52,7 +52,7 @@ TEST_F(SceneNodeTest, InitTest)
 {
     SceneNode root;
     root.setLocalToParent(mat4d::translate(vec3d(2,3,4)));
-    root.setLocalToWorld(mat4d::IDENTITY);
+    root.updateLocalToWorld(mat4d::IDENTITY);
 
     mat4d localToParent = root.getLocalToParent();
     mat4d localToWorld = root.getLocalToWorld();    
@@ -85,6 +85,7 @@ TEST_F(SceneNodeTest, WorldLocal)
     ASSERT_EQ(pos0, vec3d::ZERO);
     ASSERT_EQ(pos, localToWorld.translation());
     ASSERT_EQ(pos, localToWorld*vec3d::ZERO);
+    ASSERT_EQ(pos, object->getWorldPos());
     ASSERT_EQ(localToParent.translation(), vec3d(3,4,-5));
 
     scene.getRoot().setLocalToParent(mat4d::IDENTITY);
@@ -170,6 +171,130 @@ TEST_F(SceneNodeTest, WorldLocal4)
 
 
     ASSERT_LT((object->getLocalToWorld()*vec4d(0,0,0,1) - object2->getLocalToWorld()*vec4d(0,0,0,1)).xyz().length(), 1.0E-10);
+}
+
+TEST_F(SceneNodeTest, Bounds1)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(10,0,0)));
+    object->setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
+    scene.getRoot().addChild(object);
+
+    
+    scene.update();
+
+    // Root node should now hav an expanded bounds box which includes objects bounds box
+    mork::box3d bb = scene.getRoot().getWorldBounds();
+    mork::box3d co = mork::box3d(0, 11, -1, 1, -1, 1);
+    ASSERT_EQ(bb.xmax, co.xmax);
+    ASSERT_EQ(bb.xmin, co.xmin);
+    ASSERT_EQ(bb.ymax, co.ymax);
+    ASSERT_EQ(bb.ymin, co.ymin);
+    ASSERT_EQ(bb.zmax, co.zmax);
+    ASSERT_EQ(bb.zmin, co.zmin);
+ 
+    
+}
+
+TEST_F(SceneNodeTest, Bounds2)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(0, 10,0))*mat4d::rotatez(radians(90.0)));
+    object->setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
+    scene.getRoot().addChild(object);
+
+    std::shared_ptr<SceneNode> object2 = std::make_shared<SceneNode>();
+    object2->setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(vec3d(10, 0,0)));
+    object2->setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
+    scene.getRoot().addChild(object2);
+
+   
+    scene.update();
+
+    // Root node should now hav an expanded bounds box which includes objects bounds box
+    mork::box3d bb = scene.getRoot().getWorldBounds();
+    mork::box3d co = mork::box3d(-1, 1, 0, 11, -1, 1);
+    ASSERT_LT(fabs(bb.xmax- co.xmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.xmin- co.xmin), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymax- co.ymax), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymin- co.ymin), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmax- co.zmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmin- co.zmin), 1.0E-12);
+ 
+    
+}
+
+
+TEST_F(SceneNodeTest, Bounds3)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(0, -10,5))*mat4d::rotatez(radians(90.0)));
+    object->setLocalBounds(mork::box3d(-10, 1, -1, 1, -1, 2));
+    scene.getRoot().addChild(object);
+
+    std::shared_ptr<SceneNode> object2 = std::make_shared<SceneNode>();
+    object2->setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(vec3d(10, 0,0)));
+    object2->setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
+    scene.getRoot().addChild(object2);
+
+   
+    scene.update();
+
+    // Root node should now hav an expanded bounds box which includes objects bounds box
+    mork::box3d bb = scene.getRoot().getWorldBounds();
+    mork::box3d co = mork::box3d(-1, 1, -20, 11, -1, 7);
+    ASSERT_LT(fabs(bb.xmax- co.xmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.xmin- co.xmin), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymax- co.ymax), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymin- co.ymin), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmax- co.zmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmin- co.zmin), 1.0E-12);
+ 
+    
+}
+
+TEST_F(SceneNodeTest, Bounds4)
+{
+    Scene scene;
+    
+    
+    
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    object->setLocalToParent(mat4d::translate(vec3d(0, -10,5)));
+    object->setLocalBounds(mork::box3d(-10, 1, -1, 1, -1, 1));
+    scene.getRoot().addChild(object);
+
+    std::shared_ptr<SceneNode> object2 = std::make_shared<SceneNode>();
+    object2->setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(vec3d(10, 0,0)));
+    object2->setLocalBounds(mork::box3d(-1, 3, -1, 1, -1, 2));
+    object->addChild(object2);
+
+   
+    scene.update();
+
+    // Root node should now hav an expanded bounds box which includes objects bounds box
+    mork::box3d bb = scene.getRoot().getWorldBounds();
+    mork::box3d co = mork::box3d(-10, 1, -11, 3, 0, 7);
+    ASSERT_LT(fabs(bb.xmax- co.xmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.xmin- co.xmin), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymax- co.ymax), 1.0E-12);
+    ASSERT_LT(fabs(bb.ymin- co.ymin), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmax- co.zmax), 1.0E-12);
+    ASSERT_LT(fabs(bb.zmin- co.zmin), 1.0E-12);
+ 
+    
 }
 
 
