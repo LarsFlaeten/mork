@@ -14,7 +14,7 @@
 
 using namespace std;
 
-static std::string window_title = "Lights 01";
+static std::string window_title = "Lights 02";
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
@@ -230,10 +230,8 @@ public:
         
         prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
         vao.bind();
-        glActiveTexture(GL_TEXTURE0 + 0);
-        diffuseMap.bind();
-        glActiveTexture(GL_TEXTURE0 + 1);
-        specularMap.bind();
+        diffuseMap.bind(0);
+        specularMap.bind(1);
         glDrawArrays(GL_TRIANGLES, 0, 36); 
 
 

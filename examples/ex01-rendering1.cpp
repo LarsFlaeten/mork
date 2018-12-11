@@ -245,15 +245,13 @@ public:
         prog3.use();
         prog3.getUniform("ourTexture").set(0);
         vao3.bind();
-        tex1.bind();
+        tex1.bind(0);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
         
         prog4.use();
         vao4.bind();
-        glActiveTexture(GL_TEXTURE0 + 0);
-        tex1.bind();
-        glActiveTexture(GL_TEXTURE0 + 1);
-        tex2.bind();
+        tex1.bind(0);
+        tex2.bind(1);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); 
 
 

@@ -139,10 +139,8 @@ public:
         prog.getUniform("transform").set(proj*view*model);
         prog.use();
         vao.bind();
-        glActiveTexture(GL_TEXTURE0 + 0);
-        tex1.bind();
-        glActiveTexture(GL_TEXTURE0 + 1);
-        tex2.bind();
+        tex1.bind(0);
+        tex2.bind(1);
         glDrawArrays(GL_TRIANGLES, 0, 36); 
    
         GlfwWindow::redisplay(t, dt);

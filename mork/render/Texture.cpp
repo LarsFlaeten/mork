@@ -31,14 +31,14 @@ namespace mork {
         } 
     }
 
-    void TextureBase::bind(int texUnit) {
+    void TextureBase::bind(int texUnit) const {
         if(texUnit < 0)
             throw std::runtime_error("texUnit < 0 not allowed");
         glActiveTexture(GL_TEXTURE0 + texUnit);
         bind();
     }
 
-    void TextureBase::unbind(int texUnit) {
+    void TextureBase::unbind(int texUnit) const {
         if(texUnit < 0)
             throw std::runtime_error("texUnit < 0 not allowed");
         glActiveTexture(GL_TEXTURE0 + texUnit);

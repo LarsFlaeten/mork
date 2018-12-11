@@ -16,11 +16,9 @@ namespace mork {
         virtual ~TextureBase();
         TextureBase(TextureBase&& o);
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
-        
-        virtual void bind(int texUnit);
-        virtual void unbind(int texUnit);
+      
+        virtual void bind(int texUnit) const;
+        virtual void unbind(int texUnit) const;
 
 
         virtual void loadTexture(const std::string& file, bool flip_vertical) = 0;
@@ -31,6 +29,9 @@ namespace mork {
         virtual int getNumChannels() const = 0;
 
     protected:
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
+       
         struct TextureData {
             int width;
             int height;
@@ -66,15 +67,15 @@ namespace mork {
                 other.texture = 0;
                 td = other.td;
             }
-
-            virtual void bind() const {
-                glBindTexture(GL_TEXTURE_2D, texture);
+           
+            virtual void bind(int texUnit) const {
+                TextureBase::bind(texUnit);
             }
     
-            virtual void unbind() const {
-                glBindTexture(GL_TEXTURE_2D, 0);
+            virtual void unbind(int texUnit) const {
+                TextureBase::unbind(texUnit);
             }
-           
+   
             virtual void loadTexture(const std::string& file, bool flip_vertical) {
                 td = loadTexture2D(texture, file, flip_vertical, true);
             }
@@ -103,7 +104,16 @@ namespace mork {
                 return td.numChannels;
             }
 
-       private:
+        protected:
+            virtual void bind() const {
+                glBindTexture(GL_TEXTURE_2D, texture);
+            }
+    
+            virtual void unbind() const {
+                glBindTexture(GL_TEXTURE_2D, 0);
+            }
+ 
+        private:
             TextureData td;
     };
 

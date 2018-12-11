@@ -122,8 +122,8 @@ void main()
         prog.use();        
         prog.getUniform("textColor").set(color);
         prog.getUniform("projection").set(projection);
-        glActiveTexture(GL_TEXTURE0);
-
+        prog.getUniform("text").set(0); // Texture unit
+ 
         float base_x = x;
         float base_y = y;
 
@@ -161,7 +161,7 @@ void main()
         	};
 
             // Render glyph texture over quad
-			ch.texture.bind();
+			ch.texture.bind(0);
         	// Update content of VBO memory
         	vbo.bind();
 			// TODO: make new method in VB class to do this
@@ -172,7 +172,7 @@ void main()
         	glDrawArrays(GL_TRIANGLES, 0, 6);
         	// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
         	x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
-            ch.texture.unbind();
+            ch.texture.unbind(0);
         }
 
         vao.unbind();
