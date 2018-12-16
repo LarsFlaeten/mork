@@ -234,6 +234,10 @@ double GlfwWindow::getFrameTime() const {
         return 0.0;
 }
 
+double GlfwWindow::getDt() const {
+    return dt;
+}
+
 // Override to catch fps update events..
 void GlfwWindow::fpsUpdatedEvent() {
 

@@ -45,8 +45,15 @@ public:
 
     virtual void idle(bool damaged);
 
+    // FPS for the last second
     virtual double getFps() const;
+
+    // Average frametime for the last second
     virtual double getFrameTime() const;
+
+    // frametime for the current frame
+    virtual double getDt() const;
+
     virtual void fpsUpdatedEvent();
 
     virtual void setWindowTitle(const std::string& title);
