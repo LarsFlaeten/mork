@@ -119,7 +119,13 @@ namespace mork {
     vec4d Camera::getPosition() const {
         return vec4d(this->getLocalToParent().translation());
     }
+    
+    // Local camera fron is 0,0,-1, so tranform to world coordinates
+    vec3d Camera::getWorldDirection() const {
+        return this->getLocalToWorld().mat3x3()*vec3d(0,0,-1);
 
+    }
+ 
     void Camera::update() {
         // set this camera(node)s local to world by using its reference (if it exists)
         if(reference != nullptr) {

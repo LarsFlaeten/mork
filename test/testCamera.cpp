@@ -200,6 +200,87 @@ TEST_F(CameraTest, RelPosTest2)
    
 }
 
+// test direction of a camera which is absolute (not attached to an object)
+TEST_F(CameraTest, DirectionTest)
+{
+    Scene scene;
+
+    std::shared_ptr<Camera> camera = std::make_shared<Camera>();;
+    scene.addCamera(camera);
+
+    camera->setPosition(vec4d(0, 0, 0, 1));
+    camera->lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((camera->getWorldPos() - mork::vec3d(0, 0, 0)).length(), 1.0E-6);
+    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(-1,0,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,1,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,-1,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,0,1), vec3d(-1, 0, 0));
+    scene.update();
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,0,-1), vec3d(-1, 0, 0));
+    scene.update();
+    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldDirection()).length(), 1.0E-6);
+
+
+}
+
+
+// Test direction of a camera attached to an object:
+// Lookat now refers to ojects reference frame
+TEST_F(CameraTest, DirectionTest2)
+{
+    Scene scene;
+
+    std::shared_ptr<Camera> camera = std::make_shared<Camera>();;
+    scene.addCamera(camera);
+
+    std::shared_ptr<SceneNode> object = std::make_shared<SceneNode>();
+    scene.getRoot().addChild(object);
+    camera->setReference(object);
+    object->setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(mork::vec3d(100, 0, 0)));
+
+
+    camera->setPosition(vec4d(0, 0, 0, 1));
+    camera->lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((camera->getWorldPos() - mork::vec3d(0,100, 0)).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(-1,0,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,1,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,-1,0), vec3d(0, 0, 1));
+    scene.update();
+    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,0,1), vec3d(-1, 0, 0));
+    scene.update();
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldDirection()).length(), 1.0E-6);
+
+    camera->lookAt(vec3d(0,0,-1), vec3d(-1, 0, 0));
+    scene.update();
+    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldDirection()).length(), 1.0E-6);
+
+
+}
 
 
 
