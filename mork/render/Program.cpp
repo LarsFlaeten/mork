@@ -45,6 +45,73 @@ Program& Program::operator=(Program&& o) {
 
 }
 
+std::string   Program::preProcessShader(const std::string& s) {
+    std::stringstream ss(s);
+
+    std::string line;
+    std::string processed;
+    int i = 0;
+
+
+    while(std::getline(ss, line)) {
+        // Line no;
+        ++i;        
+        
+        if(line.find("#include") != std::string::npos) {
+            std::string include = line.substr(8, line.length());
+
+            // Remove hyphens and whitespace
+            include.erase(std::remove(include.begin(), include.end(), ' '), include.end());
+            include.erase(std::remove(include.begin(), include.end(), '\"'), include.end());
+            mork::debug_logger("Ecountered include statement, including file: [", include, "]");
+            std::ifstream ifs(include);
+            if(!ifs.is_open()) {
+                mork::error_logger("Could not open file \"", include, "\".");
+                throw std::runtime_error("Error preprocessing shader");
+
+            }
+            std::string include_str;
+            std::string iline;
+            int j = 0;
+            while(std::getline(ifs, iline)) {
+               ++j;
+               include_str.append(iline); 
+               include_str.append("\n");
+            }
+            mork::debug_logger("Read ", j, " lines: ");
+            //mork::debug_logger(include_str);
+
+            // trim last endline, since it will be reappended when adde to outer
+            if(include_str[include_str.length()-1] == '\n')
+                include_str = include_str.substr(0, include_str.length()-1);
+
+            // Recursively preprocess the included shader
+            preProcessShader(include_str);
+
+            // replace the include statement with the actual included file:
+            line = include_str;
+        
+        
+        }
+
+        processed.append(line);
+        processed.append("\n");
+    }
+
+
+    // Check the complete shader:
+    // #version should be on first line
+    // No version directives later
+    /*
+        if(i==1 && line.find("#version") != 0){
+            mork::warn_logger("Version preprocessor directive not in first line og GLSL, adding");
+            processed.append("#version 330 core\n");
+        }
+*/
+
+    return processed;
+}
+
 
 
 void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
@@ -56,9 +123,12 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
         _fs = 0;
         _vs = 0;
     }
-    
-    const char* c_vs = vssrc.c_str();
-    const char* c_fs = fssrc.c_str();
+   
+    std::string vs_proc = preProcessShader(vssrc);
+    std::string fs_proc = preProcessShader(fssrc);
+
+    const char* c_vs = vs_proc.c_str();
+    const char* c_fs = fs_proc.c_str();
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
@@ -74,6 +144,7 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     {
         glGetShaderInfoLog(_vs, 512, NULL, infoLog);
         mork::error_logger("SHADER::VERTEX::COMPILATION_FAILED: ", infoLog); 
+        mork::error_logger(vs_proc);
         throw std::runtime_error(infoLog);
     }
     // fragment shader
@@ -87,6 +158,7 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     {
         glGetShaderInfoLog(_fs, 512, NULL, infoLog);
         mork::error_logger("SHADER::FRAGMENT::COMPILATION_FAILED: ", infoLog);
+        mork::error_logger(fs_proc);
         throw std::runtime_error(infoLog);
     }
     // link shaders
@@ -151,7 +223,7 @@ int Program::getProgramID() const
     return _programID;
 }
 
-const Uniform& Program::getUniform(const std::string& name) {
+const Uniform& Program::getUniform(const std::string& name) const {
     auto entry = uniforms.find(name);
     if(entry==uniforms.end()) {
         mork::error_logger("Tried to acess uniform \"", name, "\" which is not active in program ", _programID);

@@ -26,10 +26,13 @@ public:
     // TODO: remove and move use program to frambuffer?
     void    use() const;
     
-    const Uniform& getUniform(const std::string& name);
+    const Uniform& getUniform(const std::string& name) const;
     
     //protected:
     int getProgramID() const;
+
+    static std::string   preProcessShader(const std::string& s);
+
 
 private:
 
