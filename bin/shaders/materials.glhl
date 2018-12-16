@@ -1,0 +1,6 @@
+struct TexturedMaterial {
+    sampler2D diffuseMap;
+    sampler2D specularMap;
+    float shininess;
+};
+ 
