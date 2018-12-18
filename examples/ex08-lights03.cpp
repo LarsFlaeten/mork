@@ -13,6 +13,7 @@
 #include "mork/scene/SceneNode.h"
 #include "mork/render/Light.h"
 #include "mork/math/quat.h"
+#include "mork/render/Mesh.h"
 
 using namespace std;
 
@@ -84,7 +85,7 @@ public:
             : mork::GlfwWindow(mork::Window::Parameters().size(800,600).name(window_title)),
                prog(std::string(vertexShaderSource), std::string(fragmentShaderSource)),
                lampProg(std::string(vertexShaderSource), std::string(fragmentShaderSource2)),
-               font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48))
+              font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48))
   {
       up = false;
       down = false;
@@ -296,13 +297,11 @@ public:
                 dirLight.set(prog, "dirLight");
          
                 spotLight.set(prog, "spotLight");
+                
+                diffuseMap.bind(0);
+                specularMap.bind(1);
                
                 vao.bind();
-     
-                mork::Texture<2>& tex0 = diffuseMap;
-                diffuseMap.bind(0);
-                mork::Texture<2>& tex1 = specularMap;
-                specularMap.bind(1);
                 glDrawArrays(GL_TRIANGLES, 0, 36); 
                 
             } else {
