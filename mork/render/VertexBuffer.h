@@ -7,6 +7,8 @@
 
 namespace mork {
 
+typedef GPUBuffer<unsigned int, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW> IndexBuffer;
+
 template<typename vertex>
 class VertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_STATIC_DRAW> {
     public:
