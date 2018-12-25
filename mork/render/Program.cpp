@@ -45,6 +45,23 @@ Program& Program::operator=(Program&& o) {
 
 }
 
+std::string   printLineNos(const std::string& s) {
+    std::stringstream ss(s);
+    std::stringstream  out;
+    std::string line;
+    int i = 0;
+
+
+    while(std::getline(ss, line)) {
+        // Line no;
+        ++i;        
+        out << i << ": " << line << "\n";
+    } 
+
+    return out.str();
+
+}
+
 std::string   Program::preProcessShader(const std::string& s) {
     std::stringstream ss(s);
 
@@ -133,9 +150,16 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     // ------------------------------------
     // vertex shader
     mork::debug_logger("Compiling vertex shader");
-    _vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(_vs, 1, &c_vs, NULL);
-    glCompileShader(_vs);
+    try {
+        _vs = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(_vs, 1, &c_vs, NULL);
+        glCompileShader(_vs);
+    } catch (std::runtime_error& e) {
+        std::string dump(c_vs);
+        error_logger(e.what());
+        error_logger(printLineNos(dump));
+        throw e;
+    }
     // check for shader compile errors
     int success;
     char infoLog[512];
@@ -149,9 +173,17 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     }
     // fragment shader
     mork::debug_logger("Compiling fragment shader");
-    _fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(_fs, 1, &c_fs, NULL);
-    glCompileShader(_fs);
+    try {
+        _fs = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(_fs, 1, &c_fs, NULL);
+        glCompileShader(_fs);
+    } catch (std::runtime_error& e) {
+        std::string dump(c_fs);
+        error_logger(e.what());
+        error_logger(printLineNos(dump));
+        throw e;
+    }
+    
     // check for shader compile errors
     glGetShaderiv(_fs, GL_COMPILE_STATUS, &success);
     if (!success)
