@@ -14,6 +14,7 @@
 #include "mork/render/Light.h"
 #include "mork/math/quat.h"
 #include "mork/render/Mesh.h"
+#include "mork/render/Material.h"
 
 using namespace std;
 
@@ -50,19 +51,28 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "uniform PointLight pointLight;\n"
     "uniform DirLight dirLight;\n"
     "uniform SpotLight spotLight;\n"
-    "uniform TexturedMaterial material;\n"
+    "uniform Material material;\n"
     "uniform vec3 viewPos;\n"
     "\n"
     "void main()\n"
     "{\n"
+    "   // Base color contribution:\n"
+    "   vec3 ambientColor = evaluateTextureLayers(material.ambientColor, material.ambientLayers, material.numAmbientLayers, texCoord);\n"
+    "   vec3 diffuseColor = evaluateTextureLayers(material.diffuseColor, material.diffuseLayers, material.numDiffuseLayers, texCoord);\n"
+    "   vec3 specularColor = evaluateTextureLayers(material.specularColor, material.specularLayers, material.numSpecularLayers, texCoord);\n"
+    "   vec3 emissiveColor = evaluateTextureLayers(material.emissiveColor, material.emissiveLayers, material.numEmissiveLayers, texCoord);\n"
+    "\n"
+    "   // Calculate light contribution:\n"
     "   vec3 lightResult = vec3(0.0, 0.0, 0.0);\n"
     "   vec3 viewDir = normalize(viewPos - fragPos);\n"
-    "   lightResult += CalcPointLight(pointLight, normal, fragPos, viewDir, material, texCoord);\n"
-    "   lightResult += CalcDirLight(dirLight, normal, viewDir, material, texCoord);\n"
-    "   lightResult += CalcSpotLight(spotLight, normal, fragPos, viewPos, material, texCoord);\n"
+    "   lightResult += CalcPointLight(ambientColor, diffuseColor, specularColor, pointLight, normal, fragPos, viewDir, material);\n"
+    "   lightResult += CalcDirLight(ambientColor, diffuseColor, specularColor, dirLight, normal, viewDir, material);\n"
+    "   lightResult += CalcSpotLight(ambientColor, diffuseColor, specularColor, spotLight, normal, fragPos, viewPos, material);\n"
     "\n"
-    "   FragColor = vec4((lightResult), 1.0);\n"
-    "}\n\0";
+    "   vec3 total = emissiveColor + lightResult;\n"
+    "\n"
+    "   FragColor = vec4((total), 1.0);\n"
+   "}\n\0";
 
 const char *fragmentShaderSource2 = "#version 330 core\n"
     "out vec4 FragColor;\n"
@@ -163,11 +173,22 @@ public:
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        diffuseMap.loadTexture("textures/container2.png", true);
-        specularMap.loadTexture("textures/container2_specular.png", true);
-        prog.use();
-        prog.getUniform("material.diffuseMap").set(0);
-        prog.getUniform("material.specularMap").set(1);
+        mork::Texture<2> diffuse1;
+        diffuse1.loadTexture("textures/container2.png", true);
+        mork::TextureLayer tl_diff1(std::move(diffuse1), mork::Op::ADD, 0.8f);
+
+        mork::Texture<2> diffuse2;
+        diffuse2.loadTexture("textures/awesomeface.png", true);
+        mork::TextureLayer tl_diff2(std::move(diffuse2), mork::Op::ADD, 0.2f);
+
+
+        mork::Texture<2> specular;
+        specular.loadTexture("textures/container2_specular.png", true);
+        mork::TextureLayer tl_spec(std::move(specular));
+
+        material.diffuseLayers.push_back(std::move(tl_diff1));
+        material.diffuseLayers.push_back(std::move(tl_diff2));
+        material.specularLayers.push_back(std::move(tl_spec));
 
 
         for(int i = 0; i < 10; ++i) {
@@ -261,6 +282,20 @@ public:
 
        // draw boxes:
         int boxcount = 0;
+                 
+        prog.use();
+        
+        pointLight.set(prog, "pointLight");
+                
+
+        dirLight.set(prog, "dirLight");
+         
+        spotLight.set(prog, "spotLight");
+                
+        material.set(prog, "material");
+        material.bindTextures();
+        
+        
         for(auto& box : boxes) {
             mork::Visibility viz = camera->getWorldFrustum().getVisibility(box->getWorldBounds());
             ++boxcount;
@@ -282,25 +317,14 @@ public:
                 mork::mat4d model = box->getLocalToWorld();
                 mork::mat3d normalMat = ((model.inverse()).transpose()).mat3x3();
                 //mork::mat4f trans = (proj*view*model).cast<float>();
-                prog.use();
                 prog.getUniform("projection").set(proj.cast<float>());
                 prog.getUniform("view").set(view.cast<float>());
                 prog.getUniform("model").set(model.cast<float>());
                 prog.getUniform("normalMat").set(normalMat.cast<float>());
                
-                prog.getUniform("material.shininess").set(32.0f);
                 prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
      
-                pointLight.set(prog, "pointLight");
-                
-
-                dirLight.set(prog, "dirLight");
-         
-                spotLight.set(prog, "spotLight");
-                
-                diffuseMap.bind(0);
-                specularMap.bind(1);
-               
+              
                 vao.bind();
                 glDrawArrays(GL_TRIANGLES, 0, 36); 
                 
@@ -494,8 +518,8 @@ private:
     mork::VertexBuffer<mork::vertex_pos_norm_uv> vb;
     mork::GPUBuffer<unsigned int, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW> ib;
 
-    mork::Texture<2> diffuseMap, specularMap;
-
+    //mork::Texture<2> diffuseMap, specularMap;
+    mork::Material material;
 
     mork::VertexArrayObject vao;
     mork::Program prog, lampProg;    

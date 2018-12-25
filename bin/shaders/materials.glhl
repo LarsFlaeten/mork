@@ -1,6 +1,50 @@
-struct TexturedMaterial {
-    sampler2D diffuseMap;
-    sampler2D specularMap;
-    float shininess;
+#define MAX_TEXTURE_LAYERS 4u
+
+const uint OP_ADD = 1u;
+const uint OP_MULTIPLY = 2u;
+
+struct TextureLayer {
+    uint op;
+    float   blendFactor;
+    sampler2D texture;
 };
+
+struct Material {
+    vec3 ambientColor;
+    vec3 diffuseColor;
+    vec3 specularColor;
+    vec3 emissiveColor;
+
+    float shininess;
+     
+    uint numDiffuseLayers;
+    uint numSpecularLayers;
+    uint numAmbientLayers;
+    uint numEmissiveLayers;
+
+    TextureLayer diffuseLayers[MAX_TEXTURE_LAYERS];
+    TextureLayer specularLayers[MAX_TEXTURE_LAYERS];
+    TextureLayer ambientLayers[MAX_TEXTURE_LAYERS];
+    TextureLayer emissiveLayers[MAX_TEXTURE_LAYERS];
+};
+
+
  
+
+vec3 evaluateTextureLayers(vec3 baseColor, TextureLayer[MAX_TEXTURE_LAYERS] textureLayers, uint numLayers, vec2 _texCoords) {
+    
+    for(uint i = 0u; i < numLayers && i < MAX_TEXTURE_LAYERS; ++i) {
+        vec3 contrib = vec3(texture(textureLayers[i].texture, _texCoords));
+        float blend = textureLayers[i].blendFactor;
+        if(textureLayers[i].op == OP_ADD)
+            baseColor += blend*contrib;
+        else if(textureLayers[i].op == OP_MULTIPLY)
+            baseColor *= blend*contrib;
+
+        
+    } 
+
+    return baseColor;
+}
+
+
