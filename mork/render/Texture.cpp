@@ -12,8 +12,16 @@ namespace mork {
         glGenTextures(1, &texture);
     }
 
-    TextureBase::TextureBase(TextureBase&& other) : texture(other.texture) {
+    TextureBase::TextureBase(TextureBase&& other) noexcept : texture(other.texture) {
         other.texture = 0;
+    }
+
+    TextureBase& TextureBase::operator=(TextureBase&& other) noexcept {
+        if(other.texture != texture) {
+            texture = other.texture;
+            other.texture = 0;
+        }
+        return *this;
     }
 
 
@@ -44,6 +52,15 @@ namespace mork {
         glActiveTexture(GL_TEXTURE0 + texUnit);
         unbind();
     }   
+        
+    bool TextureBase::operator==(const TextureBase& other) const {
+        return texture == other.texture;
+    }
+        
+    bool TextureBase::operator!=(const TextureBase& other) const {
+        return texture != other.texture;
+    }
+
 
     TextureBase::TextureData TextureBase::loadTexture2D(unsigned int texture, const std::string& file, bool flip_vertical = false, bool generate_mip = true)
     {

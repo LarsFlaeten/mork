@@ -14,7 +14,9 @@ namespace mork {
     public:
         TextureBase();
         virtual ~TextureBase();
-        TextureBase(TextureBase&& o);
+        TextureBase(TextureBase&& o) noexcept;
+        TextureBase& operator=(TextureBase&& o) noexcept;
+
 
       
         virtual void bind(int texUnit) const;
@@ -27,6 +29,9 @@ namespace mork {
         virtual int getHeight() const = 0;
         virtual int getDepth() const = 0;
         virtual int getNumChannels() const = 0;
+            
+        virtual bool operator==(const TextureBase& other) const;
+        virtual bool operator!=(const TextureBase& other) const;
 
     protected:
         virtual void bind() const = 0;
@@ -62,12 +67,19 @@ namespace mork {
                 td.numChannels = 0;
             }
 
-            Texture<2>(Texture<2> && other) {
+            Texture<2>(Texture<2> && other) noexcept {
                 texture = other.texture;
                 other.texture = 0;
                 td = other.td;
             }
-           
+            
+            Texture<2>& operator=(Texture<2>&& o) noexcept {
+                texture = o.texture; o.texture = 0;
+                td = o.td;  
+                return *this;
+
+            }
+
             virtual void bind(int texUnit) const {
                 TextureBase::bind(texUnit);
             }
