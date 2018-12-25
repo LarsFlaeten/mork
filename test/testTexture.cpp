@@ -62,4 +62,53 @@ TEST_F(TextureTest, LoadTexture2dTest1)
 
 }
 
+TEST_F(TextureTest, Texture2dEqualityTest)
+{
+    mork::Texture<2> tex2d1, tex2d2;
+    tex2d1.loadTexture("textures/container.jpg", false);
+
+    tex2d2.loadTexture("textures/awesomeface.png", true);
+    
+    
+    ASSERT_EQ(tex2d1 == tex2d2, false);
+    ASSERT_EQ(tex2d1 != tex2d2, true);
+    ASSERT_EQ(tex2d1 == tex2d1, true);
+    ASSERT_EQ(tex2d1 != tex2d1, false);
+    ASSERT_EQ(tex2d2 == tex2d2, true);
+    ASSERT_EQ(tex2d2 != tex2d2, false);
+
+
+
+
+
+
+
+
+
+}
+
+TEST_F(TextureTest, Texture2dMoveAndVector)
+{
+    mork::Texture<2> tex2d1, tex2d2;
+    tex2d1.loadTexture("textures/container.jpg", false);
+
+    tex2d2.loadTexture("textures/awesomeface.png", true);
+    
+    
+    std::vector<mork::Texture<2> > textures;
+
+    // Standard push bu move
+    textures.push_back(std::move(tex2d1));
+
+    // Construct in place
+    textures.push_back(mork::Texture<2>());
+    
+
+    
+
+
+
+
+}
+
 
