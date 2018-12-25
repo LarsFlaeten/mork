@@ -17,14 +17,14 @@ namespace mork {
             glGenBuffers(1, &bufptr);
         }
 
-        GPUBuffer(GPUBuffer&& o) {
+        GPUBuffer(GPUBuffer&& o) noexcept {
             bufptr = o.bufptr;
             o.bufptr = 0;
 
         }
 
-        GPUBuffer& operator=(GPUBuffer&& o) {
-            if(GlfwWindow::isContextActive())
+        GPUBuffer& operator=(GPUBuffer&& o) noexcept {
+            if(GlfwWindow::isContextActive() && bufptr!=o.bufptr)
             {
                 if(bufptr) {
                     unbind();
@@ -34,6 +34,9 @@ namespace mork {
             
             bufptr = o.bufptr;
             o.bufptr = 0;
+            
+            return *this;
+
         }
         virtual ~GPUBuffer() {
             // TODO: Change method of establishing active context
