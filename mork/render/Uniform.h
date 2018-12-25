@@ -24,6 +24,7 @@ namespace mork {
             void set(const vec3f& v) const;
             void set(const vec4f& v) const;
             void set(const int& i) const;
+            void set(const unsigned int& i) const;
             void set(const mat4f& m) const;
             void set(const mat3f& m) const;
             void set(const float& f) const;
@@ -59,6 +60,15 @@ namespace mork {
                 glUniform1i(u_loc, i);
             }
     };
+    
+    template<> class UniformHandler<unsigned int>
+    {
+        public:
+            inline static void set(const unsigned int& i, int u_loc) {
+                glUniform1ui(u_loc, i);
+            }
+    };
+
 
     template<> class UniformHandler<mork::mat4f>
     {

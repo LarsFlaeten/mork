@@ -30,6 +30,17 @@ namespace mork {
         UniformHandler<int>::set(i, u_loc);
     }
 
+    void Uniform::set(const unsigned int& i) const {
+        if(type!=GL_UNSIGNED_INT) {
+            mork::error_logger("Type of the Uniform was: ", type, ", but instance of template allows ", GL_UNSIGNED_INT );
+            throw std::runtime_error("Tried setting int on Uniform with different type");
+        
+        }
+            
+        UniformHandler<unsigned int>::set(i, u_loc);
+    }
+
+
     void Uniform::set(const mork::mat4f& m) const {
         if(type!=GL_FLOAT_MAT4) {
             mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT_MAT4, "(GL_FOAT_MAT4)");
