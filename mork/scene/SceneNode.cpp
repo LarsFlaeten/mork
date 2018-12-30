@@ -15,7 +15,10 @@ namespace mork {
     void SceneNode::addChild(SceneNode&& child) {
         children.push_back(std::make_shared<SceneNode>(std::move(child)));
     }
-
+   
+    const std::vector<std::shared_ptr<SceneNode> >& SceneNode::getChildren() const {
+        return children;
+    }
 
     mat4d   SceneNode::getLocalToParent() const{
         return localToParent;
@@ -43,6 +46,10 @@ namespace mork {
 
     void SceneNode::setLocalBounds(const box3d& bounds) {
         localBounds = bounds;
+    }
+
+    void SceneNode::enlargeLocalBounds(const box3d& bounds) {
+        localBounds = localBounds.enlarge(bounds);
     }
 
 

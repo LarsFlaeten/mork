@@ -15,6 +15,7 @@ namespace mork {
             virtual void addChild(std::shared_ptr<SceneNode> child);
             virtual void addChild(SceneNode&& child);
 
+            virtual const std::vector<std::shared_ptr<SceneNode> >& getChildren() const;
 
             virtual mat4d   getLocalToParent() const;
 
@@ -28,6 +29,7 @@ namespace mork {
             virtual box3d   getWorldBounds() const;
 
             virtual void    setLocalBounds(const box3d& bounds);
+            virtual void    enlargeLocalBounds(const box3d& bounds);
 
             virtual void    updateLocalToWorld(const mat4d& parentLocalToWorld);
 
