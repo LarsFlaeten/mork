@@ -212,27 +212,46 @@ TEST_F(CameraTest, DirectionTest)
     camera->lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     scene.update();
     ASSERT_LT((camera->getWorldPos() - mork::vec3d(0, 0, 0)).length(), 1.0E-6);
-    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
+
 
     camera->lookAt(vec3d(-1,0,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
 
     camera->lookAt(vec3d(0,1,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
 
     camera->lookAt(vec3d(0,-1,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
 
     camera->lookAt(vec3d(0,0,1), vec3d(-1, 0, 0));
     scene.update();
-    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
 
     camera->lookAt(vec3d(0,0,-1), vec3d(-1, 0, 0));
     scene.update();
-    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldForward()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldUp()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldRight()).length(), 1.0E-6);
+
 
 
 }
@@ -257,27 +276,27 @@ TEST_F(CameraTest, DirectionTest2)
     camera->lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     scene.update();
     ASSERT_LT((camera->getWorldPos() - mork::vec3d(0,100, 0)).length(), 1.0E-6);
-    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 1, 0) - camera->getWorldForward()).length(), 1.0E-6);
 
     camera->lookAt(vec3d(-1,0,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, -1, 0) - camera->getWorldForward()).length(), 1.0E-6);
 
     camera->lookAt(vec3d(0,1,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(-1, 0, 0) - camera->getWorldForward()).length(), 1.0E-6);
 
     camera->lookAt(vec3d(0,-1,0), vec3d(0, 0, 1));
     scene.update();
-    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(1, 0, 0) - camera->getWorldForward()).length(), 1.0E-6);
 
     camera->lookAt(vec3d(0,0,1), vec3d(-1, 0, 0));
     scene.update();
-    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, 1) - camera->getWorldForward()).length(), 1.0E-6);
 
     camera->lookAt(vec3d(0,0,-1), vec3d(-1, 0, 0));
     scene.update();
-    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldDirection()).length(), 1.0E-6);
+    ASSERT_LT((vec3d(0, 0, -1) - camera->getWorldForward()).length(), 1.0E-6);
 
 
 }

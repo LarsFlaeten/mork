@@ -276,7 +276,7 @@ public:
 
 
         mork::SpotLight spotLight;
-        spotLight.setDirection(camera->getWorldDirection());
+        spotLight.setDirection(camera->getWorldForward());
         spotLight.setPosition(camera->getWorldPos());
         spotLight.setAmbientColor(mork::vec3d::ZERO);
 

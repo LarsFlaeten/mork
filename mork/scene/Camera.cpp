@@ -121,8 +121,20 @@ namespace mork {
     }
     
     // Local camera fron is 0,0,-1, so tranform to world coordinates
-    vec3d Camera::getWorldDirection() const {
+    vec3d Camera::getWorldForward() const {
         return this->getLocalToWorld().mat3x3()*vec3d(0,0,-1);
+
+    }
+ 
+    // Local camera up is 0,1,0, so tranform to world coordinates
+    vec3d Camera::getWorldUp() const {
+        return this->getLocalToWorld().mat3x3()*vec3d(0,1,0);
+
+    }
+     
+    // Local camera right is 1,0,0, so tranform to world coordinates
+    vec3d Camera::getWorldRight() const {
+        return this->getLocalToWorld().mat3x3()*vec3d(1,0,0);
 
     }
  
