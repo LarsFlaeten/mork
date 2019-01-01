@@ -5,7 +5,8 @@ namespace mork {
 
     SceneNode::SceneNode() 
         : localToParent(mat4d::IDENTITY),
-            localBounds(box3d::ZERO) {
+            localBounds(box3d::ZERO),
+           visible(true) {
     }
    
     void SceneNode::addChild(std::shared_ptr<SceneNode> child) {
@@ -66,10 +67,21 @@ namespace mork {
            worldBounds = worldBounds.enlarge(child->getWorldBounds()); 
     }
 
+    bool SceneNode::isVisible() const {
+        return visible;
+    }
 
+    void SceneNode::isVisible(bool _visible) {
+        visible = _visible;
+    }
 
+    void SceneNode::draw(const Program& prog) const {
+        if(!isVisible())
+            return;
 
+        for(auto& child : children) {
+            child->draw(prog);
 
-
-
+        }
+    }
 }

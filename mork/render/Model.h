@@ -23,7 +23,7 @@ namespace mork {
             
             const BasicMesh& getMesh(unsigned int index) const;
 
-			void draw(const Program& prog) const;
+			virtual void draw(const Program& prog) const;
         private:
 
             std::vector<Material>       materials;
@@ -40,7 +40,7 @@ namespace mork {
             
             void addMeshIndex(unsigned int index);
     
-            void draw(const Program& prog, const Model& model) const; 
+            virtual void draw(const Program& prog, const Model& model) const; 
         protected:
             std::vector<unsigned int>    meshIndices;
 

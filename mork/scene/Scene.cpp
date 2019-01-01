@@ -30,6 +30,17 @@ namespace mork {
         for(auto& cam : cameras) {
             cam->update();
         }
+    }
+
+    void Scene::draw(const Program& prog) {
+        for(auto& cam : cameras) {
+            computeVisibility(*cam, root, PARTIALLY_VISIBLE);
+
+            // DRAW
+            // TODO: Make predicates for drawing in order to be able to do passes
+
+            root.draw(prog);
+        }
 
     }
             
@@ -37,5 +48,17 @@ namespace mork {
         this->cameras.push_back(camera);
     }
 
+    void Scene::computeVisibility(const Camera& cam, SceneNode& node, Visibility v) {
+        // Do explicit calc on visibility of this nod if parent is partially visible
+        if(v == PARTIALLY_VISIBLE) {
+            v = cam.getWorldFrustum().getVisibility(node.getWorldBounds());
+        }
 
+        // Set not to visible if partially or fully visible
+        node.isVisible( v != INVISIBLE );
+
+        for(auto& child : node.getChildren()) {
+            computeVisibility(cam, *child, v);
+        }
+    }
 }

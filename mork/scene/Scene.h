@@ -21,9 +21,14 @@ namespace mork {
 
             void    update();
 
+            void    draw(const Program& prog);
+
             void addCamera(std::shared_ptr<Camera> camera);
 
         private:
+
+            void computeVisibility(const Camera& cam, SceneNode& node, Visibility parentVisibility);
+
             SceneNode   root;            
 
             std::vector<std::shared_ptr<Camera> > cameras;

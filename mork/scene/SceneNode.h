@@ -5,6 +5,10 @@
 #include <memory>
 
 #include "mork/math/mat4.h" 
+
+#include "mork/scene/Frustum.h"
+#include "mork/render/Program.h"
+
 namespace mork {
 
 
@@ -33,7 +37,15 @@ namespace mork {
 
             virtual void    updateLocalToWorld(const mat4d& parentLocalToWorld);
 
+            virtual bool isVisible() const;
+
+            virtual void isVisible(bool visible);
+
+            virtual void draw(const Program& prog) const;
+
         protected:
+
+            bool visible;
 
             mat4d   localToParent;
 
