@@ -4,12 +4,13 @@
 
 namespace mork {
     Camera::Camera() :
-    fov(radians(45.0)), aspect(800.0/600.0), near_clipping(0.1), far_clipping(100) {
+
+        reference(nullptr), fov(radians(45.0)), aspect(800.0/600.0), near_clipping(0.1), far_clipping(100) {
         updateProjection();    
     }
 
     Camera::Camera(double _fov, double _aspect, double _near, double _far) :
-        fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
+        reference(nullptr), fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
         updateProjection();
     } 
 
