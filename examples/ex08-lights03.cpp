@@ -192,20 +192,16 @@ public:
 
 
         for(int i = 0; i < 10; ++i) {
-            std::shared_ptr<mork::SceneNode> box = std::make_shared<mork::SceneNode>();
-            box->setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
-            boxes.push_back(box);
-            scene.getRoot().addChild(box);
+            auto& box = scene.getRoot().addChild(mork::SceneNode(std::string("box") + std::to_string(i+1)));
+            box.setLocalBounds(mork::box3d(-1, 1, -1, 1, -1, 1));
         }
 
-        lamp = std::make_shared<mork::SceneNode>();
-        scene.getRoot().addChild(lamp);
+        scene.getRoot().addChild(mork::SceneNode("lamp"));
 
         camera = std::make_shared<mork::Camera>();
         camera->setFOV(radians(45.0));
         camera->setPosition(mork::vec4d(-12, 0, 0, 1));
         camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        //camera->setReference(box);
         scene.addCamera(camera);
 
 
@@ -228,15 +224,15 @@ public:
         double timeValue = timer.getTime();
      
         // Update sceme:
-        int i = 0;
-        for(auto& box : boxes) {
-
-            box->setLocalToParent(
-                mork::mat4d::translate(positions[i])*mork::mat4d::rotatez(0.01*timeValue)*mork::mat4d::rotatey(0.1*timeValue));
-            ++i;
+        int i = 1;
+        for(mork::SceneNode& box : scene.getRoot().getChildren()) {
+            box.setLocalToParent(
+                mork::mat4d::translate(positions[i++])*mork::mat4d::rotatez(0.01*timeValue)*mork::mat4d::rotatey(0.1*timeValue));
         }
 
-        lamp->setLocalToParent(mork::mat4d::scale(mork::vec3d(0.5, 0.5, 0.5))*mork::mat4d::translate(lampPos));
+
+        auto& lamp = scene.getRoot().getChild("lamp");
+        lamp.setLocalToParent(mork::mat4d::scale(mork::vec3d(0.5, 0.5, 0.5))*mork::mat4d::translate(lampPos));
        
         // Adjust camera:
         if( up || down || left || right ) {
@@ -266,7 +262,7 @@ public:
         mork::mat4d proj = camera->getProjectionMatrix(); 
             
         mork::PointLight pointLight;
-        pointLight.setPosition( lamp->getLocalToWorld().translation()); 
+        pointLight.setPosition( lamp.getLocalToWorld().translation()); 
         pointLight.setAmbientColor(mork::vec3d::ZERO);
 
         mork::DirLight dirLight;
@@ -296,25 +292,28 @@ public:
         material.bindTextures();
         
         
-        for(auto& box : boxes) {
-            mork::Visibility viz = camera->getWorldFrustum().getVisibility(box->getWorldBounds());
+        for(int i = 0; i < 10; ++i) {
+            std::string name = std::string("box") + std::to_string(i+1);
+            auto& box = scene.getRoot().getChild(name);
+
+            mork::Visibility viz = camera->getWorldFrustum().getVisibility(box.getWorldBounds());
             ++boxcount;
             if(viz != mork::Visibility::INVISIBLE) {
 
                 if(viz == mork::Visibility::PARTIALLY_VISIBLE) {
-                    box_pviz << "Box #" << boxcount << "\n";
+                    box_pviz << box.getName() << "\n";
                     pointLight.setDiffuseColor(mork::vec3d(1,0,0));
                     dirLight.setDiffuseColor(mork::vec3d(1,0,0));
                     spotLight.setDiffuseColor(mork::vec3d(1,0,0));
                 } else {
-                    box_viz << "Box #" << boxcount << "\n";
+                    box_viz << box.getName() << "\n";
                     pointLight.setDiffuseColor(mork::vec3d(1,1,1));
                     dirLight.setDiffuseColor(mork::vec3d(1,1,1));
                     spotLight.setDiffuseColor(mork::vec3d(1,1,1));
  
                 }
 
-                mork::mat4d model = box->getLocalToWorld();
+                mork::mat4d model = box.getLocalToWorld();
                 mork::mat3d normalMat = ((model.inverse()).transpose()).mat3x3();
                 //mork::mat4f trans = (proj*view*model).cast<float>();
                 prog.getUniform("projection").set(proj.cast<float>());
@@ -329,12 +328,12 @@ public:
                 glDrawArrays(GL_TRIANGLES, 0, 36); 
                 
             } else {
-                box_iviz << "Box #" << boxcount << "\n";
+                box_iviz << box.getName() << "\n";
             }
         }
 
         // draw lamp:
-        mork::mat4d model2 = lamp->getLocalToWorld();
+        mork::mat4d model2 = lamp.getLocalToWorld();
         lampProg.use();
         lampProg.getUniform("projection").set(proj.cast<float>());
         lampProg.getUniform("view").set(view.cast<float>());
@@ -526,9 +525,7 @@ private:
  
     mork::Scene scene;
 
-    std::vector< std::shared_ptr<mork::SceneNode> > boxes;
     std::vector< mork::vec3d > positions;
-    std::shared_ptr<mork::SceneNode> lamp;
 
     std::shared_ptr<mork::Camera> camera;
 

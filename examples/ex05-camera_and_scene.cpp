@@ -115,15 +115,14 @@ public:
 
   
         for(int i = 1; i <= 9; ++i) {
-            nodes[i] = std::make_shared<mork::SceneNode>();
-            scene.getRoot().addChild(nodes[i]);
+            scene.getRoot().addChild(mork::SceneNode(std::string("box") + std::to_string(i)));
         }
 
         camera = std::make_shared<mork::Camera>();
         camera->setFOV(radians(45.9));
         camera->setPosition(mork::vec4d(-10, 0, 0, 1));
         camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        camera->setReference(nodes[5]);
+        camera->setReference(scene.getRoot().getChild("box5"));
         scene.addCamera(camera);
 
 
@@ -144,11 +143,12 @@ public:
         double timeValue = timer.getTime();
      
         // Update sceme:
-        for(auto& a : nodes) {
-            int i = a.first;
-            a.second->setLocalToParent(
+        int i = 1;
+        for(mork::SceneNode& a : scene.getRoot().getChildren()) {
+            a.setLocalToParent(
                 mork::mat4d::translate(mork::vec3d(10.0, 2*i-10, 0))*mork::mat4d::rotatez(0.01*i*timeValue)*mork::mat4d::rotatey(0.1*i*timeValue)
                 );
+            ++i;
         }
         scene.update();
 
@@ -160,12 +160,12 @@ public:
 
 
         // draw model:
-        for(auto& a : nodes) {
-            mork::mat4d model = a.second->getLocalToWorld();
+        for(mork::SceneNode& a : scene.getRoot().getChildren()) {
+            mork::mat4d model = a.getLocalToWorld();
             mork::mat4f trans = (proj*view*model).cast<float>();
             prog.use();
             prog.getUniform("transform").set(trans);
-            if(camera->getReference() == a.second)
+            if(camera->getReference() == a)
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 0.0, 0.0, 1.0));
             else
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 1.0, 1.0, 1.0));
@@ -235,10 +235,11 @@ public:
         {
             int obj = c-48;
     
-            if(obj>0 && obj < 10)
-                camera->setReference(nodes[obj]);
-            else if(obj == 0)
-                camera->setReference(nullptr);
+            if(obj>0 && obj < 10) {
+                auto& node = scene.getRoot().getChild(std::string("box") + std::to_string(obj));
+                camera->setReference(node);
+            } else if(obj == 0)
+                camera->setReference(scene.getRoot());
 
             return true;
 
@@ -277,7 +278,6 @@ private:
  
     mork::Scene scene;
 
-    map<int, std::shared_ptr<mork::SceneNode> > nodes;
 
     std::shared_ptr<mork::Camera> camera;
 };

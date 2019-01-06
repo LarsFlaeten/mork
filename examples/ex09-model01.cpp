@@ -105,10 +105,10 @@ public:
 
          
         //model= mork::ModelImporter::loadModel("models/nff/", "sphere.nff"); 
-        model = mork::ModelImporter::loadModel("models/nanosuit/", "nanosuit.obj"); 
+        std::unique_ptr<mork::SceneNode> model = std::make_unique<mork::Model>(mork::ModelImporter::loadModel("models/nanosuit/", "nanosuit.obj", "model")); 
         model->setLocalToParent(mork::mat4d::translate(mork::vec3d(0,0,-7))*mork::mat4d::rotatez(radians(-90.0))*mork::mat4d::rotatex(radians(90.0)));
         //model = mork::ModelImporter::loadModel("/home/lars/workspace/assimp/test/models-nonbsd/OBJ/", "segment.obj"); 
-        scene.getRoot().addChild(model);        
+        scene.getRoot().addChild(std::move(model));        
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -202,7 +202,9 @@ public:
             
 
         // draw scene:
-        mork::mat4d modelMat = model->getLocalToWorld();
+        auto& model = scene.getRoot().getChild("model");
+
+        mork::mat4d modelMat = model.getLocalToWorld();
         mork::mat3d normalMat = ((modelMat.inverse()).transpose()).mat3x3();
         //mork::mat4f trans = (proj*view*model).cast<float>();
         prog.use();
@@ -220,22 +222,21 @@ public:
         pointLight.set(prog, "pointLight");
         
 
-        model->draw(prog);
+        model.draw(prog);
 
         // local function to draw recursive tree bounding boxes:
         struct local {
             void drawBox(const mork::SceneNode& node, const mork::mat4d& proj, const mork::mat4d& view) {
                 mork::BBoxDrawer::drawBox(node.getWorldBounds(), proj, view);                
-                for(const auto& child : node.getChildren()) {
-                    drawBox(*child, proj, view);
+                for(const mork::SceneNode& child : node.getChildren()) {
+                    drawBox(child, proj, view);
                 }
                 
 
             }
         } f; 
 
-        //f.drawBox(*model, proj, view);
-
+        f.drawBox(model, proj, view);
 
         // Draw 2D Text 
         glDisable(GL_DEPTH_TEST);
@@ -393,7 +394,6 @@ private:
     mork::Program prog;
     mork::Texture<2> diffuseMap, specularMap;
 
-    std::shared_ptr<mork::Model> model;
     mork::Material material;
     std::set<char> keys;
  
