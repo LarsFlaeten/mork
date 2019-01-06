@@ -18,6 +18,15 @@ namespace mork {
         return root;
     }
 
+    const Camera& Scene::getCamera() const {
+        return camera;
+    }
+
+    Camera& Scene::getCamera() {
+        return camera;
+    }
+
+
     void Scene::update() {
 
         // Traverse the node tree from root and up
@@ -25,17 +34,10 @@ namespace mork {
         root.updateLocalToWorld(mat4d::IDENTITY);
 
     
-        // When all nodes are updated, we can update all cameras
-        // relative to their target nodes (if they have any)
-        for(auto& cam : cameras) {
-            cam->update();
-        }
+        // When all nodes are updated, we can the camera
+        // relative to its target nodes (if any)
+        camera.update();
 
     }
-            
-    void Scene::addCamera(std::shared_ptr<Camera> camera) {
-        this->cameras.push_back(camera);
-    }
-
 
 }

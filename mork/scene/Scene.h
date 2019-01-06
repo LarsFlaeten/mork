@@ -18,15 +18,19 @@ namespace mork {
             const SceneNode& getRoot() const;
 
             SceneNode& getRoot();
+            
+            const Camera& getCamera() const;
+
+            Camera& getCamera();
+
 
             void    update();
 
-            void addCamera(std::shared_ptr<Camera> camera);
 
         private:
             SceneNode   root;            
 
-            std::vector<std::shared_ptr<Camera> > cameras;
+            Camera      camera;
 
     };
 
