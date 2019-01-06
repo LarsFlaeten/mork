@@ -11,7 +11,10 @@ namespace mork {
 
         public:
             Camera();
+            Camera(const std::string& name);
             Camera(double fov, double aspect, double near, double far);
+            Camera(const std::string& name, double fov, double aspect, double near, double far);
+
 
             virtual void setPosition(const vec4d& pos);
             virtual void setRotation(const mat3d& rot);
@@ -42,8 +45,8 @@ namespace mork {
 
             virtual void update();
 
-            virtual void setReference(std::shared_ptr<SceneNode> node);
-            virtual std::shared_ptr<SceneNode> getReference() const;
+            virtual void setReference(const SceneNode& node);
+            virtual const SceneNode& getReference() const;
 
             virtual const Frustum& getWorldFrustum() const;
 
@@ -52,11 +55,10 @@ namespace mork {
             virtual void updateProjection();
 
             // Hide these and add empty overrides, to avoid setting children on cameras
-            virtual void addChild(std::shared_ptr<SceneNode>& child);
-            virtual void addChild(SceneNode&& child);
+            virtual SceneNode& addChild(SceneNode&& child);
 
 
-            std::shared_ptr<SceneNode>  reference;
+            const SceneNode*  reference;
             
             Frustum worldFrustum;            
             

@@ -1,17 +1,30 @@
 #include "mork/scene/Camera.h"
+#include "mork/util/Util.h"
 
 #include <stdexcept>
 
 namespace mork {
     Camera::Camera() :
-    fov(radians(45.0)), aspect(800.0/600.0), near_clipping(0.1), far_clipping(100) {
+        Camera(std::string("Cam") + random_string(5))
+    {
+    }
+    
+    Camera::Camera(const std::string& name) :
+        SceneNode(name), reference(nullptr), fov(radians(45.0)), aspect(800.0/600.0), near_clipping(0.1), far_clipping(100) {
         updateProjection();    
     }
 
-    Camera::Camera(double _fov, double _aspect, double _near, double _far) :
-        fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
+
+    Camera::Camera(const std::string& name, double _fov, double _aspect, double _near, double _far) :
+        SceneNode(name), reference(nullptr), fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
         updateProjection();
     } 
+    
+    Camera::Camera(double _fov, double _aspect, double _near, double _far) :
+        SceneNode(std::string("Cam") + random_string(5)), reference(nullptr), fov(_fov), aspect(_aspect), near_clipping(_near), far_clipping(_far) {
+        updateProjection();
+    } 
+
 
     mat4d Camera::getProjectionMatrix() const {
         return projection;
@@ -53,12 +66,12 @@ namespace mork {
         
     }
 
-
+/*
     void Camera::addChild(std::shared_ptr<SceneNode>& child) {
         throw std::runtime_error("Not implemented");
     }
-
-    void Camera::addChild(SceneNode&& child) {
+*/
+    SceneNode& Camera::addChild(SceneNode&& child) {
         throw std::runtime_error("Not implemented");
     }
 
@@ -157,12 +170,12 @@ namespace mork {
         return this->getWorldToLocal();
     }
  
-    void Camera::setReference(std::shared_ptr<SceneNode> node) {
-        reference = node;
+    void Camera::setReference(const SceneNode& node) {
+        reference = &node;
     }
     
-    std::shared_ptr<SceneNode> Camera::getReference() const {
-        return reference;
+    const SceneNode& Camera::getReference() const {
+        return *reference;
     }
     
     const Frustum& Camera::getWorldFrustum() const {
