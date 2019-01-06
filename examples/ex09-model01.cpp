@@ -105,21 +105,16 @@ public:
 
          
         //model= mork::ModelImporter::loadModel("models/nff/", "sphere.nff"); 
-        model = mork::ModelImporter::loadModel("models/nanosuit/", "nanosuit.obj"); 
+        std::unique_ptr<mork::SceneNode> model = std::make_unique<mork::Model>(mork::ModelImporter::loadModel("models/nanosuit/", "nanosuit.obj", "model")); 
         model->setLocalToParent(mork::mat4d::translate(mork::vec3d(0,0,-7))*mork::mat4d::rotatez(radians(-90.0))*mork::mat4d::rotatex(radians(90.0)));
         //model = mork::ModelImporter::loadModel("/home/lars/workspace/assimp/test/models-nonbsd/OBJ/", "segment.obj"); 
-        scene.getRoot().addChild(model);        
+        scene.getRoot().addChild(std::move(model));        
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                
 
-        camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.0));
-        camera->setPosition(mork::vec4d(-10, 0, 0, 1));
-        camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        scene.addCamera(camera);
-
+        scene.getCamera().setPosition(mork::vec4d(-10, 0, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -138,7 +133,10 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);    
 
         double timeValue = timer.getTime();
-     
+         
+        auto& camera = scene.getCamera();
+
+    
         // Update sceme:
         // Adjust camera:
         if( up || down || left || right ) {
@@ -152,31 +150,31 @@ public:
                 angle = 30.0;
             if( down || right)
                 angle = -30.0;
-            mork::mat3d mat = camera->getRotation();
+            mork::mat3d mat = camera.getRotation();
             axis = mat*axis; // Transform axis to global
-            camera->setRotation(mork::quatd(axis, radians(angle*this->getDt())).toMat4().mat3x3()*mat);
+            camera.setRotation(mork::quatd(axis, radians(angle*this->getDt())).toMat4().mat3x3()*mat);
         }
 
         if(keys.count('W')) {
             // Move camera foward 2.0 units / s
-            mork::vec3d pos = camera->getPosition().xyz();
-            pos += camera->getWorldForward()*this->getDt()*2.0;
-            camera->setPosition(mork::vec4d(pos));
+            mork::vec3d pos = camera.getPosition().xyz();
+            pos += camera.getWorldForward()*this->getDt()*2.0;
+            camera.setPosition(mork::vec4d(pos));
         } else if(keys.count('S')) {
             // Move camera backwards 2.0 units / s
-            mork::vec3d pos = camera->getPosition().xyz();
-            pos -= camera->getWorldForward()*this->getDt()*2.0;
-            camera->setPosition(mork::vec4d(pos));
+            mork::vec3d pos = camera.getPosition().xyz();
+            pos -= camera.getWorldForward()*this->getDt()*2.0;
+            camera.setPosition(mork::vec4d(pos));
         } else if(keys.count('A')) {
             // Move camera left 2.0 units / s
-            mork::vec3d pos = camera->getPosition().xyz();
-            pos -= camera->getWorldRight()*this->getDt()*2.0;
-            camera->setPosition(mork::vec4d(pos));
+            mork::vec3d pos = camera.getPosition().xyz();
+            pos -= camera.getWorldRight()*this->getDt()*2.0;
+            camera.setPosition(mork::vec4d(pos));
         } else if(keys.count('D')) {
             // Move camera right 2.0 units / s
-            mork::vec3d pos = camera->getPosition().xyz();
-            pos += camera->getWorldRight()*this->getDt()*2.0;
-            camera->setPosition(mork::vec4d(pos));
+            mork::vec3d pos = camera.getPosition().xyz();
+            pos += camera.getWorldRight()*this->getDt()*2.0;
+            camera.setPosition(mork::vec4d(pos));
         }
  
         
@@ -189,20 +187,23 @@ public:
 
 
         mork::SpotLight spotLight;
-        spotLight.setDirection(camera->getWorldForward());
-        spotLight.setPosition(camera->getWorldPos());
+        spotLight.setDirection(camera.getWorldForward());
+        spotLight.setPosition(camera.getWorldPos());
         
         //spotLight.setAmbientColor(mork::vec3d(0.05, 0.05, 0.05));
 
         mork::PointLight pointLight;
-      
-        mork::mat4d view = camera->getViewMatrix();
 
-        mork::mat4d proj = camera->getProjectionMatrix(); 
+
+        mork::mat4d view = camera.getViewMatrix();
+
+        mork::mat4d proj = camera.getProjectionMatrix(); 
             
 
         // draw scene:
-        mork::mat4d modelMat = model->getLocalToWorld();
+        auto& model = scene.getRoot().getChild("model");
+
+        mork::mat4d modelMat = model.getLocalToWorld();
         mork::mat3d normalMat = ((modelMat.inverse()).transpose()).mat3x3();
         //mork::mat4f trans = (proj*view*model).cast<float>();
         prog.use();
@@ -211,7 +212,7 @@ public:
         prog.getUniform("model").set(modelMat.cast<float>());
         prog.getUniform("normalMat").set(normalMat.cast<float>());
        
-        prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
+        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
 
         dirLight.set(prog, "dirLight");
  
@@ -220,22 +221,21 @@ public:
         pointLight.set(prog, "pointLight");
         
 
-        model->draw(prog);
+        model.draw(prog);
 
         // local function to draw recursive tree bounding boxes:
         struct local {
             void drawBox(const mork::SceneNode& node, const mork::mat4d& proj, const mork::mat4d& view) {
                 mork::BBoxDrawer::drawBox(node.getWorldBounds(), proj, view);                
-                for(const auto& child : node.getChildren()) {
-                    drawBox(*child, proj, view);
+                for(const mork::SceneNode& child : node.getChildren()) {
+                    drawBox(child, proj, view);
                 }
                 
 
             }
         } f; 
 
-        //f.drawBox(*model, proj, view);
-
+        f.drawBox(model, proj, view);
 
         // Draw 2D Text 
         glDisable(GL_DEPTH_TEST);
@@ -265,7 +265,7 @@ public:
         glViewport(0, 0, x, y);
         GlfwWindow::reshape(x, y);
 
-        camera->setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+        scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
         idle(false);
     }
 
@@ -351,9 +351,9 @@ public:
             int obj = c-48;
     
             if(obj>0 && obj < 10)
-                camera->setReference(nodes[obj]);
+                camera.setReference(nodes[obj]);
             else if(obj == 0)
-                camera->setReference(nullptr);
+                camera.setReference(nullptr);
 
             return true;
 
@@ -393,13 +393,10 @@ private:
     mork::Program prog;
     mork::Texture<2> diffuseMap, specularMap;
 
-    std::shared_ptr<mork::Model> model;
     mork::Material material;
     std::set<char> keys;
  
     mork::Scene scene;
-
-    std::shared_ptr<mork::Camera> camera;
 
 };
 

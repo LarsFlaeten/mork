@@ -16,6 +16,8 @@ namespace mork {
 
     class Model : public SceneNode {
         public:
+            Model(const std::string& name);
+
             void addMaterial(Material&& mat);
             void addMesh(BasicMesh&& mesh);
 

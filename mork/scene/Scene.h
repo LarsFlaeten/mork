@@ -18,6 +18,11 @@ namespace mork {
             const SceneNode& getRoot() const;
 
             SceneNode& getRoot();
+            
+            const Camera& getCamera() const;
+
+            Camera& getCamera();
+
 
             void    update();
 
@@ -31,7 +36,7 @@ namespace mork {
 
             SceneNode   root;            
 
-            std::vector<std::shared_ptr<Camera> > cameras;
+            Camera      camera;
 
     };
 

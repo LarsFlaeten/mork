@@ -162,18 +162,13 @@ public:
         prog.getUniform("material.diffuseMap").set(0);
         prog.getUniform("material.specularMap").set(1);
 
-        box = std::make_shared<mork::SceneNode>();
-        scene.getRoot().addChild(box);
+        scene.getRoot().addChild(mork::SceneNode("box"));
 
-        lamp = std::make_shared<mork::SceneNode>();
-        scene.getRoot().addChild(lamp);
+        scene.getRoot().addChild(mork::SceneNode("lamp"));
 
-        camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.0));
-        camera->setPosition(mork::vec4d(-12, 0, 0, 1));
-        camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        //camera->setReference(box);
-        scene.addCamera(camera);
+        scene.getCamera().setFOV(radians(45.0));
+        scene.getCamera().setPosition(mork::vec4d(-12, 0, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
 
 
         glEnable(GL_BLEND);
@@ -193,26 +188,29 @@ public:
         double timeValue = timer.getTime();
      
         // Update sceme:
-        box->setLocalToParent(
+        auto& box = scene.getRoot().getChild("box");
+        auto& lamp = scene.getRoot().getChild("lamp");
+        
+        box.setLocalToParent(
                 mork::mat4d::translate(mork::vec3d(0, 0, 0))*mork::mat4d::rotatez(0.01*timeValue)*mork::mat4d::rotatey(0.1*timeValue));
         
         
         
 
-        lamp->setLocalToParent(mork::mat4d::scale(mork::vec3d(0.5, 0.5, 0.5))*mork::mat4d::translate(lampPos));
+        lamp.setLocalToParent(mork::mat4d::scale(mork::vec3d(0.5, 0.5, 0.5))*mork::mat4d::translate(lampPos));
  
         
                 
         scene.update();
 
 
-       
-        mork::mat4d view = camera->getViewMatrix();
+        mork::Camera& camera = scene.getCamera(); 
+        mork::mat4d view = camera.getViewMatrix();
 
-        mork::mat4d proj = camera->getProjectionMatrix(); 
+        mork::mat4d proj = camera.getProjectionMatrix(); 
 
         // draw box:
-        mork::mat4d model = box->getLocalToWorld();
+        mork::mat4d model = box.getLocalToWorld();
         mork::mat3d normalMat = ((model.inverse()).transpose()).mat3x3();
         //mork::mat4f trans = (proj*view*model).cast<float>();
         prog.use();
@@ -226,9 +224,9 @@ public:
         prog.getUniform("light.ambient").set(mork::vec3f(0.2, 0.2, 0.2));
         prog.getUniform("light.diffuse").set(mork::vec3f(0.5, 0.5, 0.5));
         prog.getUniform("light.specular").set(mork::vec3f(1.0, 1.0, 1.0));
-        prog.getUniform("light.position").set(lamp->getLocalToWorld().translation().cast<float>());
+        prog.getUniform("light.position").set(lamp.getLocalToWorld().translation().cast<float>());
         
-        prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
+        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
         vao.bind();
         diffuseMap.bind(0);
         specularMap.bind(1);
@@ -236,7 +234,7 @@ public:
 
 
         // draw lamp:
-        mork::mat4d model2 = lamp->getLocalToWorld();
+        mork::mat4d model2 = lamp.getLocalToWorld();
         lampProg.use();
         lampProg.getUniform("projection").set(proj.cast<float>());
         lampProg.getUniform("view").set(view.cast<float>());
@@ -279,7 +277,7 @@ public:
         glViewport(0, 0, x, y);
         GlfwWindow::reshape(x, y);
 
-        camera->setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+        scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
         idle(false);
     }
 
@@ -361,11 +359,6 @@ private:
     mork::Program prog, lampProg;    
  
     mork::Scene scene;
-
-    std::shared_ptr<mork::SceneNode> box;
-    std::shared_ptr<mork::SceneNode> lamp;
-
-    std::shared_ptr<mork::Camera> camera;
 
     mork::vec3d lampPos;
 };
