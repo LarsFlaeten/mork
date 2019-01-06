@@ -72,9 +72,9 @@ namespace mork {
         }
         
         
-        void processNode(const aiNode* inode, const aiScene* iscene, const Model& model, std::shared_ptr<SceneNode> parent) {
+        void processNode(const aiNode* inode, const aiScene* iscene, const Model& model, SceneNode& parent) {
             
-            std::shared_ptr<ModelNode> node = std::make_shared<ModelNode>();
+            std::unique_ptr<ModelNode> node = std::make_unique<ModelNode>();
 
             // Set initial localbounds with the first mesh
             // This is to handle a case where all meshes are offset from zero and theire
@@ -103,12 +103,12 @@ namespace mork {
             node->setLocalToParent(m2);
  
             // Add this node to its parent:
-            parent->addChild(node);
+            SceneNode& ref = parent.addChild(std::move(node));
 
             // then do the same for each of its children
             for(unsigned int i = 0; i < inode->mNumChildren; i++)
             {
-                processNode(inode->mChildren[i], iscene, model, node);
+                processNode(inode->mChildren[i], iscene, model, ref);
             }
         
         }
@@ -262,7 +262,7 @@ namespace mork {
 
     }
 
-    std::shared_ptr<Model> ModelImporter::loadModel(const std::string& path, const std::string& file) {
+    Model ModelImporter::loadModel(const std::string& path, const std::string& file, const std::string& nodeName) {
 
         Assimp::Importer importer;
         std::string filepath = path + file;
@@ -275,16 +275,16 @@ namespace mork {
             throw std::runtime_error("Failed loading model");
         }
 
-        auto model = std::make_shared<Model>();
+        Model model(nodeName);
 
         // Load common materials:
-        ModelImporterInternal::loadMaterials(scene, *model, path);
+        ModelImporterInternal::loadMaterials(scene, model, path);
 
         // Load all meshes
-        ModelImporterInternal::loadMeshes(scene, *model);
+        ModelImporterInternal::loadMeshes(scene, model);
         
         // Create the node tree
-        ModelImporterInternal::processNode(scene->mRootNode, scene, *model, model);
+        ModelImporterInternal::processNode(scene->mRootNode, scene, model, model);
 
         return model;
     }
