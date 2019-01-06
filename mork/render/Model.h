@@ -16,6 +16,8 @@ namespace mork {
 
     class Model : public SceneNode {
         public:
+            Model(const std::string& name);
+
             void addMaterial(Material&& mat);
             void addMesh(BasicMesh&& mesh);
 
@@ -23,7 +25,7 @@ namespace mork {
             
             const BasicMesh& getMesh(unsigned int index) const;
 
-			void draw(const Program& prog) const;
+			virtual void draw(const Program& prog) const;
         private:
 
             std::vector<Material>       materials;

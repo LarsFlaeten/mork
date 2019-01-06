@@ -25,13 +25,16 @@ namespace mork {
             
         }
 
-        for(auto child : children) {
-            auto modelNode = std::dynamic_pointer_cast<ModelNode>(child);
-            modelNode->draw(prog, model);
+        for(SceneNode& node : childrenRefs) {
+            const auto& modelNode = dynamic_cast<ModelNode&>(node);
+            modelNode.draw(prog, model);
         }
 
     }
 
+    Model::Model(const std::string& name) : SceneNode(name) {
+
+    }
     void Model::addMesh(BasicMesh&& mesh) {
         meshes.push_back(std::move(mesh));
     }
@@ -50,9 +53,9 @@ namespace mork {
    
 	void Model::draw(const Program& prog) const {
 
-		for(auto sceneNode : children) {
-            auto modelNode = std::dynamic_pointer_cast<ModelNode>(sceneNode);
-            modelNode->draw(prog, *this);
+		for(SceneNode& node : childrenRefs) {
+            const auto& modelNode = dynamic_cast<ModelNode&>(node); 
+            modelNode.draw(prog, *this);
 
         }
 	}
