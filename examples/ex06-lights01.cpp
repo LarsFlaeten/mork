@@ -163,13 +163,9 @@ public:
 
         scene.getRoot().addChild(mork::SceneNode("lamp"));
 
-        camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.9));
-        camera->setPosition(mork::vec4d(-12, 0, 0, 1));
-        camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        //camera->setReference(box);
-        scene.addCamera(camera);
-
+        scene.getCamera().setFOV(radians(45.9));
+        scene.getCamera().setPosition(mork::vec4d(-12, 0, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -205,10 +201,10 @@ public:
         scene.update();
 
 
-       
-        mork::mat4d view = camera->getViewMatrix();
+        auto& camera = scene.getCamera();       
+        mork::mat4d view = camera.getViewMatrix();
 
-        mork::mat4d proj = camera->getProjectionMatrix(); 
+        mork::mat4d proj = camera.getProjectionMatrix(); 
 
         // draw box:
         mork::mat4d model = box.getLocalToWorld();
@@ -230,7 +226,7 @@ public:
         prog.getUniform("light.specular").set(mork::vec3f(1.0, 1.0, 1.0));
         prog.getUniform("light.position").set(lamp.getLocalToWorld().translation().cast<float>());
         
-        prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
+        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
         vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36); 
 
@@ -279,7 +275,7 @@ public:
         glViewport(0, 0, x, y);
         GlfwWindow::reshape(x, y);
 
-        camera->setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+        scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
         idle(false);
     }
 
@@ -361,8 +357,6 @@ private:
     mork::Program prog, lampProg;    
  
     mork::Scene scene;
-
-    std::shared_ptr<mork::Camera> camera;
 
     mork::vec3d lampPos;
 };

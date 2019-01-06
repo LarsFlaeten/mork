@@ -198,12 +198,8 @@ public:
 
         scene.getRoot().addChild(mork::SceneNode("lamp"));
 
-        camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.0));
-        camera->setPosition(mork::vec4d(-12, 0, 0, 1));
-        camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        scene.addCamera(camera);
-
+        scene.getCamera().setPosition(mork::vec4d(-12, 0, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -233,7 +229,9 @@ public:
 
         auto& lamp = scene.getRoot().getChild("lamp");
         lamp.setLocalToParent(mork::mat4d::scale(mork::vec3d(0.5, 0.5, 0.5))*mork::mat4d::translate(lampPos));
-       
+
+
+        auto& camera = scene.getCamera();       
         // Adjust camera:
         if( up || down || left || right ) {
             mork::vec3d axis = mork::vec3d::ZERO;
@@ -246,9 +244,9 @@ public:
                 angle = 30.0;
             if( down || right)
                 angle = -30.0;
-            mork::mat3d mat = camera->getRotation();
+            mork::mat3d mat = camera.getRotation();
             axis = mat*axis; // Transform axis to global
-            camera->setRotation(mork::quatd(axis, radians(angle*this->getDt())).toMat4().mat3x3()*mat);
+            camera.setRotation(mork::quatd(axis, radians(angle*this->getDt())).toMat4().mat3x3()*mat);
         }
         
         scene.update();
@@ -257,9 +255,9 @@ public:
 
         std::stringstream box_viz, box_pviz, box_iviz;
        
-        mork::mat4d view = camera->getViewMatrix();
+        mork::mat4d view = camera.getViewMatrix();
 
-        mork::mat4d proj = camera->getProjectionMatrix(); 
+        mork::mat4d proj = camera.getProjectionMatrix(); 
             
         mork::PointLight pointLight;
         pointLight.setPosition( lamp.getLocalToWorld().translation()); 
@@ -272,8 +270,8 @@ public:
 
 
         mork::SpotLight spotLight;
-        spotLight.setDirection(camera->getWorldForward());
-        spotLight.setPosition(camera->getWorldPos());
+        spotLight.setDirection(camera.getWorldForward());
+        spotLight.setPosition(camera.getWorldPos());
         spotLight.setAmbientColor(mork::vec3d::ZERO);
 
        // draw boxes:
@@ -296,7 +294,7 @@ public:
             std::string name = std::string("box") + std::to_string(i+1);
             auto& box = scene.getRoot().getChild(name);
 
-            mork::Visibility viz = camera->getWorldFrustum().getVisibility(box.getWorldBounds());
+            mork::Visibility viz = camera.getWorldFrustum().getVisibility(box.getWorldBounds());
             ++boxcount;
             if(viz != mork::Visibility::INVISIBLE) {
 
@@ -321,7 +319,7 @@ public:
                 prog.getUniform("model").set(model.cast<float>());
                 prog.getUniform("normalMat").set(normalMat.cast<float>());
                
-                prog.getUniform("viewPos").set(camera->getLocalToWorld().translation().cast<float>());
+                prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
      
               
                 vao.bind();
@@ -379,7 +377,7 @@ public:
         glViewport(0, 0, x, y);
         GlfwWindow::reshape(x, y);
 
-        camera->setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+        scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
         idle(false);
     }
 
@@ -465,9 +463,9 @@ public:
             int obj = c-48;
     
             if(obj>0 && obj < 10)
-                camera->setReference(nodes[obj]);
+                camera.setReference(nodes[obj]);
             else if(obj == 0)
-                camera->setReference(nullptr);
+                camera.setReference(nullptr);
 
             return true;
 
@@ -526,8 +524,6 @@ private:
     mork::Scene scene;
 
     std::vector< mork::vec3d > positions;
-
-    std::shared_ptr<mork::Camera> camera;
 
     mork::vec3d lampPos;
 };

@@ -118,13 +118,9 @@ public:
             scene.getRoot().addChild(mork::SceneNode(std::string("box") + std::to_string(i)));
         }
 
-        camera = std::make_shared<mork::Camera>();
-        camera->setFOV(radians(45.9));
-        camera->setPosition(mork::vec4d(-10, 0, 0, 1));
-        camera->lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
-        camera->setReference(scene.getRoot().getChild("box5"));
-        scene.addCamera(camera);
-
+        scene.getCamera().setPosition(mork::vec4d(-10, 0, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
+        scene.getCamera().setReference(scene.getRoot().getChild("box5"));
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -153,10 +149,10 @@ public:
         scene.update();
 
 
-       
-        mork::mat4d view = camera->getViewMatrix();
+        auto& camera = scene.getCamera();       
+        mork::mat4d view = camera.getViewMatrix();
 
-        mork::mat4d proj = camera->getProjectionMatrix(); 
+        mork::mat4d proj = camera.getProjectionMatrix(); 
 
 
         // draw model:
@@ -165,7 +161,7 @@ public:
             mork::mat4f trans = (proj*view*model).cast<float>();
             prog.use();
             prog.getUniform("transform").set(trans);
-            if(camera->getReference() == a)
+            if(camera.getReference() == a)
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 0.0, 0.0, 1.0));
             else
                 prog.getUniform("colorMask").set(mork::vec4f(1.0, 1.0, 1.0, 1.0));
@@ -211,7 +207,7 @@ public:
         glViewport(0, 0, x, y);
         GlfwWindow::reshape(x, y);
 
-        camera->setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+        scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
         idle(false);
     }
 
@@ -237,9 +233,9 @@ public:
     
             if(obj>0 && obj < 10) {
                 auto& node = scene.getRoot().getChild(std::string("box") + std::to_string(obj));
-                camera->setReference(node);
+                scene.getCamera().setReference(node);
             } else if(obj == 0)
-                camera->setReference(scene.getRoot());
+                scene.getCamera().setReference(scene.getRoot());
 
             return true;
 
@@ -277,9 +273,6 @@ private:
     mork::Program prog;    
  
     mork::Scene scene;
-
-
-    std::shared_ptr<mork::Camera> camera;
 };
 
 
