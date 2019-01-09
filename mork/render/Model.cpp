@@ -15,6 +15,12 @@ namespace mork {
     }
 
     void ModelNode::draw(const Program& prog, const Model& model) const {
+
+        mork::mat4d modelMat = getLocalToWorld();
+        mork::mat3d normalMat = ((modelMat.inverse()).transpose()).mat3x3();
+        prog.getUniform("model").set(modelMat.cast<float>());
+        prog.getUniform("normalMat").set(normalMat.cast<float>());
+        
         for(unsigned int index : getMeshIndices()) {
             auto& mesh = model.getMesh(index);
 
