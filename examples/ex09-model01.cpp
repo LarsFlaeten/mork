@@ -110,11 +110,16 @@ public:
         //model = mork::ModelImporter::loadModel("/home/lars/workspace/assimp/test/models-nonbsd/OBJ/", "segment.obj"); 
         scene.getRoot().addChild(std::move(model));        
 
+        auto rock = std::make_unique<mork::Model>(mork::ModelImporter::loadModel("models/rock/", "rock.obj", "rock")); 
+        rock->setLocalToParent(mork::mat4d::translate(mork::vec3d(-10,0,0)));
+        scene.getRoot().addChild(std::move(rock));
+
+
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        scene.getCamera().setPosition(mork::vec4d(-10, 0, 0, 1));
-        scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
+        scene.getCamera().setPosition(mork::vec4d(-15, 10, 0, 1));
+        scene.getCamera().lookAt(mork::vec3d(1,-1,0), mork::vec3d(0, 0, 1));
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -195,24 +200,11 @@ public:
         mork::PointLight pointLight;
 
 
-        mork::mat4d view = camera.getViewMatrix();
-
-        mork::mat4d proj = camera.getProjectionMatrix(); 
-            
+           
 
         // draw scene:
-        auto& model = scene.getRoot().getChild("model");
-
-        mork::mat4d modelMat = model.getLocalToWorld();
-        mork::mat3d normalMat = ((modelMat.inverse()).transpose()).mat3x3();
-        //mork::mat4f trans = (proj*view*model).cast<float>();
-        prog.use();
-        prog.getUniform("projection").set(proj.cast<float>());
-        prog.getUniform("view").set(view.cast<float>());
-        prog.getUniform("model").set(modelMat.cast<float>());
-        prog.getUniform("normalMat").set(normalMat.cast<float>());
-       
-        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
+     
+        prog.use(); 
 
         dirLight.set(prog, "dirLight");
  
@@ -237,7 +229,9 @@ public:
             }
         } f; 
 
-        f.drawBox(model, proj, view);
+        mork::mat4d view = camera.getViewMatrix();
+        mork::mat4d proj = camera.getProjectionMatrix(); 
+        f.drawBox(scene.getRoot(), proj, view);
 
         // Draw 2D Text 
         glDisable(GL_DEPTH_TEST);
