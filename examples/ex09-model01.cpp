@@ -221,16 +221,18 @@ public:
         pointLight.set(prog, "pointLight");
         
 
-        model.draw(prog);
+        scene.draw(prog);
 
         // local function to draw recursive tree bounding boxes:
         struct local {
             void drawBox(const mork::SceneNode& node, const mork::mat4d& proj, const mork::mat4d& view) {
-                mork::BBoxDrawer::drawBox(node.getWorldBounds(), proj, view);                
-                for(const mork::SceneNode& child : node.getChildren()) {
-                    drawBox(child, proj, view);
-                }
+                if(node.isVisible()) {
                 
+                    mork::BBoxDrawer::drawBox(node.getWorldBounds(), proj, view);                
+                    for(const mork::SceneNode& child : node.getChildren()) {
+                        drawBox(child, proj, view);
+                    }
+                }
 
             }
         } f; 
