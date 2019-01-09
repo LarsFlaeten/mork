@@ -44,6 +44,14 @@ namespace mork {
 
         // DRAW
         // TODO: Make predicates for drawing in order to be able to do passes
+        prog.use();
+        mork::mat4d view = camera.getViewMatrix();
+        mork::mat4d proj = camera.getProjectionMatrix(); 
+        
+        prog.getUniform("projection").set(proj.cast<float>());
+        prog.getUniform("view").set(view.cast<float>());
+        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
+
 
         root.draw(prog);
 
