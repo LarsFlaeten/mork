@@ -94,8 +94,8 @@ namespace mork {
     void Camera::lookAt(const vec3d& look_dir, const vec3d& up_dir) {
         vec3d forward= look_dir.normalize();
         vec3d up = up_dir.normalize();
-        vec3d left = up_dir.crossProduct(look_dir);
-        up = look_dir.crossProduct(left);
+        vec3d left = (up_dir.crossProduct(look_dir)).normalize();
+        up = (look_dir.crossProduct(left)).normalize();
 
         mat3d rot3 = mat3d::IDENTITY;
         // Set in transposed mode to avoid making setRow methods on mat3:
