@@ -48,10 +48,6 @@ namespace mork {
         root.draw(prog);
 
     }
-            
-    void Scene::addCamera(std::shared_ptr<Camera> camera) {
-        this->cameras.push_back(camera);
-    }
 
     void Scene::computeVisibility(const Camera& cam, SceneNode& node, Visibility v) {
         // Do explicit calc on visibility of this nod if parent is partially visible
@@ -63,7 +59,7 @@ namespace mork {
         node.isVisible( v != INVISIBLE );
 
         for(auto& child : node.getChildren()) {
-            computeVisibility(cam, *child, v);
+            computeVisibility(cam, child, v);
         }
     }
 }

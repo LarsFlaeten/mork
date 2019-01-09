@@ -219,14 +219,6 @@ namespace mork {
            worldBounds = worldBounds.enlarge(entity.second->getWorldBounds()); 
     }
 
-    void   SceneNode::draw(const Program& prog) const {
-        
-        for(auto& pair : childrenMap) {
-            (pair.second)->draw(prog);
-        }
-
-    }
-
     bool SceneNode::isVisible() const {
         return visible;
     }
@@ -239,8 +231,11 @@ namespace mork {
         if(!isVisible())
             return;
 
-        for(auto& child : children) {
-            child->draw(prog);
+        // No drawing for SceneNode base class...
+
+
+        for(const SceneNode& child : childrenRefs) {
+            child.draw(prog);
 
         }
     }
