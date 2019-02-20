@@ -21,7 +21,7 @@ namespace mork {
         UniformHandler<mork::vec4f>::set(v, u_loc);
     }
     void Uniform::set(const int& i) const {
-        if(type!=GL_INT && type!=GL_SAMPLER_2D) {
+        if(type!=GL_INT && type!=GL_SAMPLER_2D && type != GL_SAMPLER_CUBE) {
             mork::error_logger("Type of the Uniform was: ", type, ", but instance of template allows ", GL_INT, ", ", GL_SAMPLER_2D );
             throw std::runtime_error("Tried setting int on Uniform with different type");
         
