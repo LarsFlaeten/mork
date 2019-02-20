@@ -20,13 +20,19 @@ namespace mork {
 
         // size = size in pixels of the rendered font
         void    drawText(const std::string& text, float x, float y, float size,
-                const vec3f& color, const mat4f& projection);
+                const vec3f& color, const mat4f& projection) const;
         
         // size = size in pixels to generate font textures. Larger number gives
         //          improved resoluiont with large fonts at rendertime, but increases
         //          texture usage
         static  Font createFont(const std::string& ttfPath, unsigned int size = 48);
 
+
+        // returns the maximum font heigh above baselin for the given font size
+        int getYMax(float fontSize) const;
+        
+        // returns the minimum font heigh (below the baseline) for the given font size
+        int getYMin(float fontSize) const;
 
         private:
         struct Glyph {

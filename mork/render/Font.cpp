@@ -33,8 +33,9 @@ uniform vec3 textColor;
 
 void main()
 {    
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-    color = vec4(textColor, 1.0) * sampled;
+    //vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
+    //color = vec4(textColor, 1.0) * sampled;
+    color = vec4(textColor, texture(text, TexCoords).r);
 }
 )";   
  
@@ -89,8 +90,9 @@ void main()
             glyph.texture.loadTexture(
                     face->glyph->bitmap.width,
                     face->glyph->bitmap.rows,
-                    1, // Only one channel, freetype is monochrome
-                    face->glyph->bitmap.buffer);
+                    GL_R8, // Only one channel, freetype is monochrome
+                    face->glyph->bitmap.buffer,
+                    true); // Generate Mip
 
             glyph.size = vec2i(face->glyph->bitmap.width, face->glyph->bitmap.rows);
             glyph.bearing = vec2i(face->glyph->bitmap_left, face->glyph->bitmap_top);
@@ -117,7 +119,7 @@ void main()
     }
 
 
-    void Font::drawText(const std::string& text, float x, float y, float size, const vec3f& color, const mat4f& projection) {
+    void Font::drawText(const std::string& text, float x, float y, float size, const vec3f& color, const mat4f& projection) const {
         vao.bind();
         prog.use();        
         prog.getUniform("textColor").set(color);
@@ -138,11 +140,11 @@ void main()
                 continue;
             } else if(c == '\t') {
                 // TODO: Configure tab behavoiur? 4 spaces for now:
-                const Glyph& sp = characters[32];
+                const Glyph& sp = (*characters.find(32)).second;
                 x += 4*(sp.advance >> 6)*scale;
                 continue;
             }
-            const Glyph& ch = characters[c]; 
+            const Glyph& ch = (*characters.find(c)).second; 
 
             float xpos = x + ch.bearing.x * scale;
             float ypos = y - (ch.size.y - ch.bearing.y) * scale;
@@ -177,6 +179,14 @@ void main()
 
         vao.unbind();
 
+    }
+
+    int Font::getYMax(float fontSize) const {
+        return yMax*fontSize/loadedSize;
+    }
+        
+    int Font::getYMin(float fontSize) const {
+        return yMin*fontSize/loadedSize;
     }
 
 
