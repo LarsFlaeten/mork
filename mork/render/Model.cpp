@@ -56,6 +56,10 @@ namespace mork {
     const std::vector<Material>& Model::getMaterials() const {
         return materials;
     }
+     
+    std::vector<Material>& Model::getMaterials(){
+        return materials;
+    }
    
 	void Model::draw(const Program& prog) const {
 

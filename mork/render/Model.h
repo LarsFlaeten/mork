@@ -22,6 +22,7 @@ namespace mork {
             void addMesh(BasicMesh&& mesh);
 
             const std::vector<Material>&  getMaterials() const;
+            std::vector<Material>&  getMaterials();
             
             const BasicMesh& getMesh(unsigned int index) const;
 
