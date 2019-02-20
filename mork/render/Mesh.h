@@ -161,8 +161,8 @@ namespace mork {
 
     template <> class MeshHelper<vertex_pos_norm_uv> {
         public:
-           static Mesh<vertex_pos_norm_uv> Plane();
-           static Mesh<vertex_pos_norm_uv> Box();
+           static Mesh<vertex_pos_norm_uv> PLANE();
+           static Mesh<vertex_pos_norm_uv> BOX();
 
 
     };

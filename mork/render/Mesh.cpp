@@ -2,7 +2,7 @@
 
 namespace mork {
 
-Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::Plane() {
+Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::PLANE() {
     const std::vector<unsigned int> indices = {  
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
@@ -22,7 +22,7 @@ Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::Plane() {
     
 }
 
-Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::Box() {
+Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::BOX() {
     std::vector<mork::vertex_pos_norm_uv> vertices = {
         {mork::vec3f(-1.0f, -1.0f, -1.0f), mork::vec3f(0,0,-1), mork::vec2f(0.0f, 0.0f)},
         {mork::vec3f( 1.0f, -1.0f, -1.0f), mork::vec3f(0,0,-1), mork::vec2f(1.0f, 0.0f)},
