@@ -1,6 +1,7 @@
 #include "mork/ui/GlfwWindow.h"
 #include "mork/core/Log.h"
 #include "mork/core/DebugMessageCallback.h"
+#include "mork/render/Framebuffer.h"
 
 #include <assert.h>
 #include <stdexcept>
@@ -67,20 +68,8 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
     }
 
 
-    // Here we get the actual size we got from glfw
-    // May not be the same as given as "hint"?
-    int width, height;
-    glfwGetFramebufferSize(gwd, &width, &height);
-    
-    // We should also call reshape function, as GLUT does,
-    // since some of the examples sets a few states based on this,
-    // however since we are in CTOR now, the derived function will not
-    // be called. Examples that rely on setting states in reshape
-    // must provide an initial value (See e.g. minimalglfw)..
-    reshape(width, height);
-
     damaged = false;
-   t = 0.0;
+    t = 0.0;
     dt = 0.0;
 
 
@@ -109,6 +98,20 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
 
     glfwMakeContextCurrent(gwd);
 
+
+    // Here we get the actual size we got from glfw
+    // May not be the same as given as "hint"?
+    int width, height;
+    glfwGetFramebufferSize(gwd, &width, &height);
+   
+    // We should also call reshape function, as GLUT does,
+    // since some of the examples sets a few states based on this,
+    // however since we are in CTOR now, the derived function will not
+    // be called. Examples that rely on setting states in reshape
+    // must provide an initial value (See e.g. minimalglfw)..
+    reshape(width, height);
+
+
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -130,11 +133,13 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
     // do immeadiate swap
     //this->waitForVSync(false);
     
+    // Proforma binding of default frambuffer.
+    auto& fb = Framebuffer::getDefault();
+    fb.bind(); 
     
     
     timer.start();
     fps_t0 = timer.end(); 
-
 }
 
 GlfwWindow::~GlfwWindow()
@@ -171,7 +176,7 @@ void GlfwWindow::shouldClose()
 
 void GlfwWindow::start()
 {
-    // Do the reshape call, as a lot of the ork/proland
+    // Do the reshape call (will call derived), as a lot of the ork/proland
     // apps are setting variables based on this:
     this->reshape(this->getWidth(), this->getHeight());
     

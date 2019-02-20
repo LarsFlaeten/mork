@@ -60,7 +60,7 @@ public:
 
     /**
      * Tells the windowing system wether to wait for a vertical
-     * sync or not beofre swapping buffers.
+     * sync or not before swapping buffers.
      */
     void    waitForVSync(bool wait);
 
