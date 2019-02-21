@@ -15,7 +15,7 @@
 #include "mork/render/Mesh.h"
 #include "mork/render/Material.h"
 #include "mork/util/ModelImporter.h"
-
+#include "mork/render/Framebuffer.h"
 #include "mork/util/BBoxDrawer.h"
 
 using namespace std;
@@ -104,10 +104,8 @@ public:
         right = false;
 
          
-        //model= mork::ModelImporter::loadModel("models/nff/", "sphere.nff"); 
         std::unique_ptr<mork::SceneNode> model = std::make_unique<mork::Model>(mork::ModelImporter::loadModel("models/nanosuit/", "nanosuit.obj", "model")); 
         model->setLocalToParent(mork::mat4d::translate(mork::vec3d(0,0,-7))*mork::mat4d::rotatez(radians(-90.0))*mork::mat4d::rotatex(radians(90.0)));
-        //model = mork::ModelImporter::loadModel("/home/lars/workspace/assimp/test/models-nonbsd/OBJ/", "segment.obj"); 
         scene.getRoot().addChild(std::move(model));        
 
         auto rock = std::make_unique<mork::Model>(mork::ModelImporter::loadModel("models/rock/", "rock.obj", "rock")); 
@@ -125,6 +123,7 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         waitForVSync(false);
+
     }
 
     ~App() {
@@ -211,7 +210,6 @@ public:
         spotLight.set(prog, "spotLight");
        
         pointLight.set(prog, "pointLight");
-        
 
         scene.draw(prog);
 
@@ -242,7 +240,6 @@ public:
         info << "Multiline text:\n";
         info << "FPS: " << this->getFps() << ", frametime: " << this->getFrameTime() << "s\n";
         info << "Key menu:(entries are tabbed)\n";
-        //info << "\tPress [0-9] to toggle focus object (0 = none)\n";
         info << "\tPress [ESC] to quit\n"; 
         info << "Keys: ";
         for(auto c: keys)
@@ -341,27 +338,13 @@ public:
     virtual bool keyTyped(unsigned char c, modifier m, int x, int y)
     {
         keys.insert(c);
-/*
-        if(c >= 48 && c <= 57)
-        {
-            int obj = c-48;
-    
-            if(obj>0 && obj < 10)
-                camera.setReference(nodes[obj]);
-            else if(obj == 0)
-                camera.setReference(nullptr);
-
-            return true;
-
-        }
-*/
-        return false;
+        return true;
     }
 
     virtual bool keyReleased(unsigned char c, modifier m, int x, int y) {
         keys.erase(c);
 
-        return false;
+        return true;
     }
 
     virtual bool mouseMotion(int x, int y) {
@@ -387,9 +370,7 @@ private:
     mork::Font font;
 
     mork::Program prog;
-    mork::Texture<2> diffuseMap, specularMap;
 
-    mork::Material material;
     std::set<char> keys;
  
     mork::Scene scene;
