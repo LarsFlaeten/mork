@@ -3,6 +3,7 @@
 
 
 #include <vector>
+#include <functional>
 
 #include <mork/math/vec3.h>
 #include <mork/render/Texture.h>
@@ -38,7 +39,6 @@ namespace mork {
             void set(const Program& prog, const std::string& target) const;
             void bindTextures() const;
 
-
             // Base colors:
             vec3f                   ambientColor;
             vec3f                   diffuseColor;
@@ -46,7 +46,11 @@ namespace mork {
             vec3f                   emissiveColor;
             // Other props
             float                   shininess;
-            
+
+            float                   reflectiveFactor;
+
+            float                   refractiveFactor;
+            float                   refractiveIndex;
 
             // Texture layers
             std::vector<TextureLayer > diffuseLayers;
@@ -58,8 +62,7 @@ namespace mork {
             std::vector<TextureLayer> normalLayers;
             std::vector<TextureLayer> heightLayers;
 
-
-
+        private:
     };
 }
 #endif

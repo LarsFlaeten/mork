@@ -14,11 +14,11 @@ namespace mork {
 
 
     
-    TextureLayer::TextureLayer(TextureLayer&& o) noexcept {
-        texture = std::move(o.texture);
-        op = o.op;
-        blendFactor = o.blendFactor;
-
+    TextureLayer::TextureLayer(TextureLayer&& o) noexcept :
+        texture(std::move(o.texture)),
+        op(o.op),
+        blendFactor(o.blendFactor)
+    {
     }
 
     TextureLayer& TextureLayer::operator=(TextureLayer&& o) noexcept {
@@ -38,7 +38,10 @@ namespace mork {
         diffuseColor(vec3f::ZERO),
         specularColor(vec3f::ZERO),
         emissiveColor(vec3f::ZERO),
-        shininess(32.0f) {}
+        shininess(32.0f),
+        reflectiveFactor(0.0f),
+        refractiveFactor(0.0f),            
+        refractiveIndex(0.0f) {}
 
     Material::Material(Material&& o) noexcept
         : diffuseLayers(std::move(o.diffuseLayers)),
@@ -48,11 +51,13 @@ namespace mork {
           normalLayers(std::move(o.normalLayers)),
           heightLayers(std::move(o.heightLayers)),
           shininess(o.shininess),
-
+          reflectiveFactor(o.reflectiveFactor),
+          refractiveFactor(o.refractiveFactor),            
+          refractiveIndex(o.refractiveIndex),          
           ambientColor(o.ambientColor),
           diffuseColor(o.diffuseColor),
           specularColor(o.specularColor),
-          emissiveColor(o.emissiveColor) { }
+          emissiveColor(o.emissiveColor){ }
     
     void Material::set(const Program& prog, const std::string& target) const {
         // Set base colors:        
@@ -63,6 +68,10 @@ namespace mork {
 
         prog.getUniform(target + ".shininess").set(shininess);        
         
+        prog.getUniform(target + ".reflectiveFactor").set(reflectiveFactor);
+        prog.getUniform(target + ".refractiveFactor").set(refractiveFactor);
+        prog.getUniform(target + ".refractiveIndex").set(refractiveIndex);
+
         // Running counter for active textures
         int tex = 0;
 
@@ -104,13 +113,12 @@ namespace mork {
             prog.getUniform(target + ".emissiveLayers[" + num + "].blendFactor").set(emissiveLayers[i].blendFactor);
         }
 
-
-
     }
 
     void Material::bindTextures() const {
         // Running counter for active textures
         int tex = 0;
+       
         unsigned int l = 0;
        
         l = ambientLayers.size();
