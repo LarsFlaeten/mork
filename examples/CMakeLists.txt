@@ -56,4 +56,9 @@ add_executable(${EXENAME} ${EXENAME}.cpp)
 set_property(TARGET ${EXENAME} PROPERTY CXX_STANDARD 17)
 target_link_libraries(${EXENAME} mork)
 
+set(EXENAME ex10-model02)
+add_executable(${EXENAME} ${EXENAME}.cpp)
+set_property(TARGET ${EXENAME} PROPERTY CXX_STANDARD 17)
+target_link_libraries(${EXENAME} mork)
+
 

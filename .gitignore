@@ -3,6 +3,7 @@ bin/*
 !bin/shaders/
 !bin/textures/
 !bin/resources/
+!bin/models/
 build/
 lib/
 *.swp
