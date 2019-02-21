@@ -16,7 +16,13 @@ struct Material {
     vec3 emissiveColor;
 
     float shininess;
-     
+
+    float reflectiveFactor;
+    
+    float refractiveFactor;            
+    float refractiveIndex;            
+
+
     uint numDiffuseLayers;
     uint numSpecularLayers;
     uint numAmbientLayers;
@@ -26,6 +32,7 @@ struct Material {
     TextureLayer specularLayers[MAX_TEXTURE_LAYERS];
     TextureLayer ambientLayers[MAX_TEXTURE_LAYERS];
     TextureLayer emissiveLayers[MAX_TEXTURE_LAYERS];
+
 };
 
 
