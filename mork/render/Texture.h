@@ -2,6 +2,7 @@
 #define _MORK_TEXTURE_H_
 
 #include <string>
+#include <vector>
 
 #include "mork/render/Bindable.h"
 #include "mork/glad/glad.h"
@@ -28,19 +29,22 @@ namespace mork {
         virtual int getWidth() const = 0;
         virtual int getHeight() const = 0;
         virtual int getDepth() const = 0;
-        virtual int getNumChannels() const = 0;
+        virtual int getFormat() const = 0;
             
         virtual bool operator==(const TextureBase& other) const;
         virtual bool operator!=(const TextureBase& other) const;
 
-    protected:
+        unsigned int getTextureId() const;
+
         virtual void bind() const = 0;
         virtual void unbind() const = 0;
-       
+ 
+    protected:
+      
         struct TextureData {
             int width;
             int height;
-            int numChannels;
+            int format;
         };
 
         unsigned int texture;
@@ -62,9 +66,10 @@ namespace mork {
     {
         public:
             Texture<2>() : TextureBase(){
+                debug_logger("Texture<2> CTOR");
                 td.width = 0;
                 td.height = 0;
-                td.numChannels = 0;
+                td.format = -1;
             }
 
             Texture<2>(Texture<2> && other) noexcept {
@@ -92,12 +97,12 @@ namespace mork {
                 td = loadTexture2D(texture, file, flip_vertical, true);
             }
              
-            virtual void loadTexture(int width, int height, int numChannels, unsigned char* data) {
+            virtual void loadTexture(int width, int height, int internalformat, unsigned char* data, bool generateMip) {
                 TextureData td;
                 td.width = width;
                 td.height = height;
-                td.numChannels = numChannels;
-                td = loadTexture2D(texture, td, data, true);
+                td.format = internalformat;
+                td = loadTexture2D(texture, td, data, generateMip);
             }
             
             virtual int getWidth() const {
@@ -112,11 +117,10 @@ namespace mork {
                 return 1;
             }
             
-            virtual int getNumChannels() const {
-                return td.numChannels;
+            virtual int getFormat() const {
+                return td.format;
             }
 
-        protected:
             virtual void bind() const {
                 glBindTexture(GL_TEXTURE_2D, texture);
             }
@@ -125,10 +129,36 @@ namespace mork {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
  
-        private:
+        protected:
             TextureData td;
     };
 
+    // The only specialization of a cubemap texture is the bind methods
+    // and the loading of the texture
+    class CubeMapTexture : public Texture<2> {
+        public:        
+        CubeMapTexture();
+        CubeMapTexture(CubeMapTexture&& o) noexcept;
+        CubeMapTexture& operator=(CubeMapTexture&& o) noexcept;
+
+        virtual void bind() const;
+        virtual void unbind() const;
+        virtual void bind(int texUnit) const;
+        virtual void unbind(int texUnit) const;
+ 
+        virtual void loadTextures(const std::vector<std::string>& face_paths);
+        
+        private:
+        
+        // Hide these:
+        virtual void loadTexture(const std::string& file, bool flip_vertical);
+        virtual void loadTexture(int width, int height, int internalformat, unsigned char* data, bool generateMip);
+
+
+ 
+
+
+    };
    
 
 }
