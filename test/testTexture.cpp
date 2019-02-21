@@ -50,13 +50,19 @@ TEST_F(TextureTest, LoadTexture2dTest1)
     ASSERT_EQ(tex2d.getDepth(), 1);    
     ASSERT_EQ(tex2d.getWidth(), 512);
     ASSERT_EQ(tex2d.getHeight(), 512);
-    ASSERT_EQ(tex2d.getNumChannels(), 3);
+    ASSERT_EQ(tex2d.getFormat(), GL_RGB8);
 
     tex2d.loadTexture("textures/awesomeface.png", true);
     ASSERT_EQ(tex2d.getDepth(), 1);    
     ASSERT_EQ(tex2d.getWidth(), 512);
     ASSERT_EQ(tex2d.getHeight(), 512);
-    ASSERT_EQ(tex2d.getNumChannels(), 4);
+    ASSERT_EQ(tex2d.getFormat(), GL_RGBA8);
+
+    tex2d.loadTexture("textures/container2_specular.png", true);
+    ASSERT_EQ(tex2d.getDepth(), 1);    
+    ASSERT_EQ(tex2d.getWidth(), 500);
+    ASSERT_EQ(tex2d.getHeight(), 500);
+    ASSERT_EQ(tex2d.getFormat(), GL_RGBA8);
 
 
 
