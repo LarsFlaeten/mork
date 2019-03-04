@@ -8,4 +8,4 @@ This project is loosely inspired by Inrias ORK, but completely rewritten
 - No NVIDIA specific calls
 - "Modern" C++17
 
-
+The development and examples are also based on JoeyDeVries excellent OpenGL tuturials over at [LearnOpenGL](http://learnopengl.com/)
