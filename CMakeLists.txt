@@ -19,7 +19,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_definitions("-fPIC")
 
 
-# Sub dirs
+enable_testing()
+add_test(NAME       runTests
+         COMMAND    runTests)
+
+
 add_subdirectory(mork)
 add_subdirectory(test)
 add_subdirectory(examples)
