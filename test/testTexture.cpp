@@ -46,19 +46,19 @@ void TextureTest::TearDown()
 TEST_F(TextureTest, LoadTexture2dTest1)
 {
     mork::Texture<2> tex2d;
-    tex2d.loadTexture("textures/container.jpg", false);
+    tex2d.loadTexture("../bin/textures/container.jpg", false);
     ASSERT_EQ(tex2d.getDepth(), 1);    
     ASSERT_EQ(tex2d.getWidth(), 512);
     ASSERT_EQ(tex2d.getHeight(), 512);
     ASSERT_EQ(tex2d.getFormat(), GL_RGB8);
 
-    tex2d.loadTexture("textures/awesomeface.png", true);
+    tex2d.loadTexture("../bin/textures/awesomeface.png", true);
     ASSERT_EQ(tex2d.getDepth(), 1);    
     ASSERT_EQ(tex2d.getWidth(), 512);
     ASSERT_EQ(tex2d.getHeight(), 512);
     ASSERT_EQ(tex2d.getFormat(), GL_RGBA8);
 
-    tex2d.loadTexture("textures/container2_specular.png", true);
+    tex2d.loadTexture("../bin/textures/container2_specular.png", true);
     ASSERT_EQ(tex2d.getDepth(), 1);    
     ASSERT_EQ(tex2d.getWidth(), 500);
     ASSERT_EQ(tex2d.getHeight(), 500);
@@ -71,9 +71,9 @@ TEST_F(TextureTest, LoadTexture2dTest1)
 TEST_F(TextureTest, Texture2dEqualityTest)
 {
     mork::Texture<2> tex2d1, tex2d2;
-    tex2d1.loadTexture("textures/container.jpg", false);
+    tex2d1.loadTexture("../bin/textures/container.jpg", false);
 
-    tex2d2.loadTexture("textures/awesomeface.png", true);
+    tex2d2.loadTexture("../bin/textures/awesomeface.png", true);
     
     
     ASSERT_EQ(tex2d1 == tex2d2, false);
@@ -96,9 +96,9 @@ TEST_F(TextureTest, Texture2dEqualityTest)
 TEST_F(TextureTest, Texture2dMoveAndVector)
 {
     mork::Texture<2> tex2d1, tex2d2;
-    tex2d1.loadTexture("textures/container.jpg", false);
+    tex2d1.loadTexture("../bin/textures/container.jpg", false);
 
-    tex2d2.loadTexture("textures/awesomeface.png", true);
+    tex2d2.loadTexture("../bin/textures/awesomeface.png", true);
     
     
     std::vector<mork::Texture<2> > textures;
