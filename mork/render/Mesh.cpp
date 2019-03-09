@@ -4,8 +4,8 @@ namespace mork {
 
 Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::PLANE() {
     const std::vector<unsigned int> indices = {  
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
+        1, 0, 3,  // first Triangle
+        2, 1, 3   // second Triangle
     };
 
 
