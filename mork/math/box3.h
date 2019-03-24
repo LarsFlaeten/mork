@@ -155,6 +155,18 @@ template <typename type> struct box3
     }
 
     /**
+     * Returns the characteristic length/norm of this bounding box
+     * i.e. the macimum size in wither dimesion.
+     * This allows norm to be used on objects with less than three dimensions,
+     * (plane or line), and still get a meaningful characteristic length
+     */
+    type norm() const
+    {
+        return max(xmax - xmin, max(ymax - ymin, zmax - zmin) );
+    }
+
+
+    /**
      * Casts this bounding box to another base type.
      */
     template <class t>
