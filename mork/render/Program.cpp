@@ -8,13 +8,64 @@
 
 namespace mork {
 
+Program::Program(int version, const std::string& src_path)
+    : _programID(0), _vs(0), _fs(0), _gs(0)
+{
+    std::ifstream t(src_path);
+    if(t.fail()) {
+        error_logger("File ", src_path, " not found");
+        throw std::runtime_error("File not found");
 
+    }
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    std::string src = buffer.str();
+
+    if(src.find("_VERTEX_") == std::string::npos || src.find("_FRAGMENT_") == std::string::npos) {
+        std::string error = "Invalid shader program, must define at least a _VERTEX_ and a _FRAGMENT_ part";
+        error_logger(error);
+        
+        throw std::runtime_error(error);
+
+    }
+
+    std::stringstream vs;
+    vs << "#version " << version << " core\n";
+    vs << "#define _VERTEX_\n";
+    vs << src;
+
+    std::stringstream fs;
+    fs << "#version " << version << " core\n";
+    fs << "#define _FRAGMENT_\n";
+    fs << src;
+
+    if(src.find("_GEOMETRY_") != std::string::npos) {
+        std::stringstream gs;
+        gs << "#version " << version << " core\n";
+        gs << "#define _GEOMETRY_\n";
+        gs << src;
+
+        buildShaders(vs.str(), fs.str(), gs.str());
+    } else {
+        buildShaders(vs.str(), fs.str());
+    }
+
+    
+
+}
 
 Program::Program(const std::string& vssrc, const std::string& fssrc)
- : _programID(0), _vs(0), _fs(0)
+ : _programID(0), _vs(0), _fs(0), _gs(0)
 {
     buildShaders(vssrc, fssrc);
 }
+
+Program::Program(const std::string& vssrc, const std::string& gssrc, const std::string& fssrc)
+ : _programID(0), _vs(0), _fs(0), _gs(0)
+{
+    buildShaders(vssrc, fssrc, gssrc);
+}
+
 
 Program::~Program() 
 {
@@ -131,7 +182,7 @@ std::string   Program::preProcessShader(const std::string& s) {
 
 
 
-void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
+void Program::buildShaders(const std::string& vssrc, const std::string& fssrc, const std::string& gssrc) {
     // This will delete the program if it allready exist, and detach shaders
     // (Thease are allready marked for deletion and will be freed)
     if(_programID!=0) {
@@ -139,13 +190,24 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
         _programID = 0;
         _fs = 0;
         _vs = 0;
+        _gs = 0;
     }
    
     std::string vs_proc = preProcessShader(vssrc);
     std::string fs_proc = preProcessShader(fssrc);
+    std::string gs_proc;
+
+    // Conditional preprocessing of geometry shader
+    bool gs = false;
+    if(gssrc.compare("") != 0) {
+        gs_proc = preProcessShader(gssrc);
+        gs = true;
+    }
 
     const char* c_vs = vs_proc.c_str();
     const char* c_fs = fs_proc.c_str();
+    const char* c_gs = gs_proc.c_str();
+
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
@@ -193,10 +255,42 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
         mork::error_logger(fs_proc);
         throw std::runtime_error(infoLog);
     }
+
+    // Geometry shader
+    if(!gs) {
+        mork::debug_logger("No geometry shader present");
+    } else { 
+        mork::debug_logger("Compiling geometry shader");
+        try {
+            _gs = glCreateShader(GL_GEOMETRY_SHADER);
+            glShaderSource(_gs, 1, &c_gs, NULL);
+            glCompileShader(_gs);
+        } catch (std::runtime_error& e) {
+            std::string dump(c_gs);
+            error_logger(e.what());
+            error_logger(printLineNos(dump));
+            throw e;
+        }
+        // check for shader compile errors
+        int success;
+        char infoLog[512];
+        glGetShaderiv(_vs, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(_vs, 512, NULL, infoLog);
+            mork::error_logger("SHADER::GEOMETRY::COMPILATION_FAILED: ", infoLog); 
+            mork::error_logger(vs_proc);
+            throw std::runtime_error(infoLog);
+        }
+    }
+    
     // link shaders
     _programID = glCreateProgram();
     glAttachShader(_programID, _vs);
     glAttachShader(_programID, _fs);
+    if(gs)
+        glAttachShader(_programID, _gs);
+
     glLinkProgram(_programID);
     // check for linking errors
     glGetProgramiv(_programID, GL_LINK_STATUS, &success);
@@ -207,7 +301,8 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
     }
     glDeleteShader(_vs);
     glDeleteShader(_fs);
-
+    if(gs)
+        glDeleteShader(_gs);
 
     // Establish active non-block uniforms in the program
     uniforms.clear();
@@ -228,8 +323,6 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc) {
 	    if(values[0] != -1)
 		    continue;
 
-	    // Get the name. Must use a std::vector rather than a std::string for C++03 standards issues.
-	    // C++11 would let you use a std::string directly.
 	    std::vector<char> nameData(values[2]);
 	    glGetProgramResourceName(_programID, GL_UNIFORM, unif, nameData.size(), NULL, &nameData[0]);
 	    std::string name(nameData.begin(), nameData.end() - 1);
@@ -265,5 +358,13 @@ const Uniform& Program::getUniform(const std::string& name) const {
     return entry->second;
 }
  
-
+bool Program::queryUniform(const std::string& name) const {
+    auto entry = uniforms.find(name);
+    if(entry==uniforms.end()) {
+        return false;
+    } 
+    
+    return true;
+}
+ 
 }
