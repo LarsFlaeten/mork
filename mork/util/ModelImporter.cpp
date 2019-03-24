@@ -21,10 +21,10 @@ namespace mork {
         }
 
         template<>
-        Mesh<vertex_pos_norm_uv> processMesh(const aiMesh* imesh, const aiScene* scene) {
+        Mesh<vertex_pos_norm_tang_bitang_uv> processMesh(const aiMesh* imesh, const aiScene* scene) {
 
 
-            std::vector<vertex_pos_norm_uv> vertices;
+            std::vector<vertex_pos_norm_tang_bitang_uv> vertices;
 			std::vector<unsigned int> indices;
             for(unsigned int i = 0; i < imesh->mNumVertices; i++)
 			{
@@ -50,7 +50,8 @@ namespace mork {
                     warn_logger("Vertex without uv found, index ", i);
                     uv = vec2f(0.0f, 0.0f);  
                 }
-                vertices.push_back(vertex_pos_norm_uv(pos, norm, uv));
+                // TODO: Calculate or fetch tangents from assimp
+                vertices.push_back(vertex_pos_norm_tang_bitang_uv(pos, norm, vec3f::ZERO, vec3f::ZERO, uv));
 			}
 
             // Process indices:
@@ -196,7 +197,8 @@ namespace mork {
             debug_logger("Num Meshes: ", iscene->mNumMeshes);
             for(int i = 0; i < iscene->mNumMeshes; ++i) {
                 const aiMesh* imesh = iscene->mMeshes[i];
-                model.addMesh(processMesh<vertex_pos_norm_uv>(imesh, iscene));
+                auto mesh = processMesh<vertex_pos_norm_tang_bitang_uv>(imesh, iscene);
+                model.addMesh(std::move(mesh));
 
 
             }
