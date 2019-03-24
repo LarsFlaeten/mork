@@ -45,16 +45,16 @@ void MeshTest::TearDown()
 
 TEST_F(MeshTest, StandardObjects)
 {
-    mork::BasicMesh mesh(mork::BasicMeshHelper::BOX());
+    using V = mork::vertex_pos_norm_uv;
+    auto mesh(mork::MeshHelper<V>::BOX());
     ASSERT_EQ(mesh.getNumVertices(), 36);
     ASSERT_EQ(mesh.getNumIndices(), 0);
     ASSERT_EQ(mesh.isIndexed(), false);
 
-    mork::BasicMesh mesh2(mork::BasicMeshHelper::PLANE());
+    auto mesh2(mork::MeshHelper<V>::PLANE());
     ASSERT_EQ(mesh2.getNumVertices(), 4);
     ASSERT_EQ(mesh2.getNumIndices(), 6);
     ASSERT_EQ(mesh2.isIndexed(), true);
-
 
 
 }
