@@ -2,7 +2,7 @@
 
 namespace mork {
     
-    Mesh<vertex_pos_norm_tang_bitang_uv> MeshUtil::calculateTBNMesh(const BasicMesh& in) {
+    Mesh<vertex_pos_norm_tang_bitang_uv> MeshUtil::calculateTBNMesh(const Mesh<vertex_pos_norm_uv>& in) {
         
         // Create a vertex vector with dummy objects and correct size
         auto n_v = in.getNumVertices();
