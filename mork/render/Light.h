@@ -30,6 +30,8 @@ class Light {
         virtual void setAmbientColor(const mork::vec3d& col);
         virtual void setDiffuseColor(const mork::vec3d& col);
         virtual void setSpecularColor(const mork::vec3d& col);
+        virtual void setColor(const mork::ColorModel& col);
+
 
         virtual mork::vec3d getAmbientColor() const;
         virtual mork::vec3d getDiffuseColor() const;
@@ -43,6 +45,7 @@ class Light {
         static const AttenuationModel DEFAULT_ATTENUATION;
 
         static const ColorModel DEFAULT_COLOR;
+        static const ColorModel NO_LIGHT;
     protected:
         vec3d ambient;
         vec3d diffuse;

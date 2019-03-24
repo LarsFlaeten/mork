@@ -21,7 +21,14 @@ namespace mork {
 
 
     }
-       
+     
+    void Light::setColor(const mork::ColorModel& col) {
+        ambient = col.ambient;
+        diffuse = col.diffuse;
+        specular = col.specular;
+    }
+
+      
     void Light::setAmbientColor(const mork::vec3d& col) {
         ambient = col;
     }
@@ -59,6 +66,12 @@ namespace mork {
             {vec3d(0.2, 0.2, 0.2),
              vec3d(1.0, 1.0, 1.0),
              vec3d(1.0, 1.0, 1.0)});
+    
+    const ColorModel Light::NO_LIGHT = ColorModel(
+            {vec3d::ZERO,
+             vec3d::ZERO,
+             vec3d::ZERO});
+
 
     PointLight::PointLight() 
         : position(vec3d::ZERO), Light(Light::DEFAULT_COLOR), attenuation(Light::DEFAULT_ATTENUATION) {
