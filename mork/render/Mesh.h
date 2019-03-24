@@ -64,6 +64,14 @@ namespace mork {
             int getNumVertices() const {
                 return numVertices;
             }
+
+            const VertexBuffer<vertex>& getVertexBuffer() const {
+                return vb;
+            }
+
+            const IndexBuffer& getIndexBuffer() const {
+                return ib;
+            } 
             
             int getNumIndices() const {
                 return numIndices;
@@ -153,16 +161,26 @@ namespace mork {
 
     };
 
-    // The most normal mesh with vertices of positions, normals and uv-mapping
+    // The most basic mesh with vertices of positions, normals and uv-mapping
     typedef Mesh<vertex_pos_norm_uv> BasicMesh;
+
+    // Mesh with full tanget space basis vectors
+    typedef Mesh<vertex_pos_norm_tang_bitang_uv> TBNMesh;
+
 
     template<typename T>
     class MeshHelper {};
 
     template <> class MeshHelper<vertex_pos_norm_uv> {
         public:
-           static Mesh<vertex_pos_norm_uv> PLANE();
-           static Mesh<vertex_pos_norm_uv> BOX();
+            static Mesh<vertex_pos_norm_uv> PLANE();
+            static Mesh<vertex_pos_norm_uv> BOX();
+            static Mesh<vertex_pos_norm_uv> SPHERE(
+                    double rx, 
+                    double ry, 
+                    double rz, 
+                    unsigned int stacks, 
+                    unsigned int sectors);
 
 
     };

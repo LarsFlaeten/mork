@@ -1,5 +1,7 @@
 #include "Mesh.h"
 
+#include <cmath>
+
 namespace mork {
 
 Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::PLANE() {
@@ -71,7 +73,105 @@ Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::BOX() {
     
 }
 
+Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::SPHERE(double rx, double ry, double rz, unsigned int stacks, unsigned int sectors) {
 
+    // http://www.songho.ca/opengl/gl_sphere.html
+    double x, y, z, xy;
+    double nx, ny, nz;
+    double u, v;
+
+    double d_sector = 2.0 * M_PI / sectors;
+    double d_stack = M_PI / stacks;
+    
+    double sector_angle, stack_angle;    
+
+    bool sphere = true;
+    if (rx != ry || ry != rz || rx != rz) 
+        sphere = false;
+
+    std::vector<vertex_pos_norm_uv> vertices;
+
+    for(unsigned int i = 0; i <= stacks; ++i) {
+        stack_angle = 0.5*M_PI - i * d_stack; // From PI/2 to -PI/2
+        z = rz * ::sin(stack_angle);
+        double cos_stack_angle = ::cos(stack_angle);
+
+        for(unsigned int j = 0; j <= sectors; ++j) {
+            sector_angle = j*d_sector; // From 0 to 2 * PI
+            
+            // Position
+            x = rx * cos_stack_angle * ::cos(sector_angle);
+            y = ry * cos_stack_angle * ::sin(sector_angle);
+            vec3d pos(x, y, z);
+
+            // If radii are different along the basis vectors, 
+            // Normals have to be calculated throug the indices,
+            // since pos.normalize() only works with a perfect sphere
+            vec3 norm = vec3d::ZERO;
+            if (sphere) 
+                vec3d norm = pos.normalize();
+            
+            // Textur coords:
+            u = (double)j / sectors;
+            v = (double)i / stacks;
+            vec2d uv(u, v);
+
+            vertex_pos_norm_uv vert(pos.cast<float>(), norm.cast<float>(), uv.cast<float>());
+            vertices.push_back(vert);
+        }
+
+    }
+
+    std::vector<unsigned int> indices;
+    int k1, k2;
+    for(unsigned int i = 0; i <= stacks; ++i) {
+        k1 = i * (sectors + 1);     // beginning of current stack
+        k2 = k1 + sectors + 1;      // beginning of next stack
+        for(unsigned int j = 0; j <= sectors; ++j, ++k1, ++k2) {
+            // 2 triangles per sector excluding first and last stacks
+            // k1 => k2 => k1+1
+            if(i != 0)
+            {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+
+                vec3f e1 = vertices[k2].pos - vertices[k1].pos;
+                vec3f e2 = vertices[k1 + 1].pos - vertices[k1].pos;
+                vec3f norm = e1.crossProduct(e2);
+                vertices[k1].norm += norm;
+                vertices[k2].norm += norm;
+                vertices[k1 + 1].norm += norm;
+
+
+
+            }
+
+            // k1+1 => k2 => k2+1
+            if(i != (stacks-1))
+            {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+                
+                vec3f e1 = vertices[k2].pos - vertices[k1 + 1].pos;
+                vec3f e2 = vertices[k2 + 1].pos - vertices[k1 + 1].pos;
+                vec3f norm = e1.crossProduct(e2);
+                vertices[k1 + 1].norm += norm;
+                vertices[k2].norm += norm;
+                vertices[k2 + 1].norm += norm;
+
+           }
+        }
+    }
+
+    for(auto& v : vertices) {
+        v.norm = v.norm.normalize();
+    }
+
+    return Mesh<vertex_pos_norm_uv>(vertices, indices); 
+}
+ 
 
 
 
