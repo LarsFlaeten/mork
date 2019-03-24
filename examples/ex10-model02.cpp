@@ -28,7 +28,9 @@ static std::string window_title = "Model 02";
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec3 aNorm;\n"
-    "layout (location = 2) in vec2 aUv;\n"
+    "layout (location = 2) in vec3 aTang;\n"
+    "layout (location = 3) in vec3 aBitang;\n"
+    "layout (location = 4) in vec2 aUv;\n"
     "out vec2 texCoord;\n"
     "out vec3 fragPos;\n"
     "out vec3 normal;\n"
@@ -199,6 +201,7 @@ class TextBox {
 
 };
 
+using VN = mork::vertex_pos_norm_uv;
 
 class App : public mork::GlfwWindow {
 public:
@@ -207,10 +210,10 @@ public:
                prog(std::string(vertexShaderSource), std::string(fragmentShaderSource)),
                font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48)),
                textBox(800, 600),
-               fsQuad(mork::BasicMeshHelper::PLANE()),
+               fsQuad(mork::MeshHelper<VN>::PLANE()),
                quadProg(std::string(vs_quad_source), std::string(fs_quad_source)),
                skyboxProg(std::string(vs_skybox), std::string(fs_skybox)),
-               skybox(mork::BasicMeshHelper::BOX()),
+               skybox(mork::MeshHelper<VN>::BOX()),
                environment()
     {
         up = false;
@@ -603,8 +606,8 @@ private:
 
     TextBox textBox;
 
-    mork::BasicMesh  fsQuad;
-    mork::BasicMesh  skybox;
+    mork::Mesh<VN>  fsQuad;
+    mork::Mesh<VN>  skybox;
 
     mork::CubeMapTexture environment;
 };
