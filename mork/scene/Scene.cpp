@@ -50,7 +50,9 @@ namespace mork {
         
         prog.getUniform("projection").set(proj.cast<float>());
         prog.getUniform("view").set(view.cast<float>());
-        prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
+        // Viewpos is not present in all shaders, so check before setting it:
+        if(prog.queryUniform("viewPos"))
+            prog.getUniform("viewPos").set(camera.getLocalToWorld().translation().cast<float>());
 
 
         root.draw(prog);
