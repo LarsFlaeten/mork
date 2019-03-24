@@ -49,7 +49,7 @@ namespace mork {
 
     }
     
-    Model::Model(const std::string& name, BasicMesh&& mesh, Material&& material)
+    Model::Model(const std::string& name, Mesh<VTBN>&& mesh, Material&& material)
         : SceneNode(name) {
 
         meshes.push_back(std::move(mesh));
@@ -65,11 +65,11 @@ namespace mork {
         this->addChild(std::move(node));
     }
 
-    void Model::addMesh(BasicMesh&& mesh) {
+    void Model::addMesh(Mesh<VTBN>&& mesh) {
         meshes.push_back(std::move(mesh));
     }
     
-    const BasicMesh& Model::getMesh(unsigned int index) const {
+    const Mesh<VTBN>& Model::getMesh(unsigned int index) const {
         return meshes[index];
     }
      

@@ -12,27 +12,27 @@
 
 namespace mork {
     
-
+    using VTBN = vertex_pos_norm_tang_bitang_uv;
 
     class Model : public SceneNode {
         public:
             Model(const std::string& name);
-            Model(const std::string& name, BasicMesh&& mesh, Material&& material);
+            Model(const std::string& name, Mesh<VTBN>&& mesh, Material&& material);
 
 
             void addMaterial(Material&& mat);
-            void addMesh(BasicMesh&& mesh);
+            void addMesh(Mesh<VTBN>&& mesh);
 
             const std::vector<Material>&  getMaterials() const;
             std::vector<Material>&  getMaterials();
             
-            const BasicMesh& getMesh(unsigned int index) const;
+            const Mesh<VTBN>& getMesh(unsigned int index) const;
 
 			virtual void draw(const Program& prog) const;
         private:
 
             std::vector<Material>       materials;
-            std::vector<BasicMesh>      meshes;
+            std::vector<Mesh<VTBN> >      meshes;
             
 
     };
