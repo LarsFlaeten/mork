@@ -161,13 +161,6 @@ namespace mork {
 
     };
 
-    // The most basic mesh with vertices of positions, normals and uv-mapping
-    typedef Mesh<vertex_pos_norm_uv> BasicMesh;
-
-    // Mesh with full tanget space basis vectors
-    typedef Mesh<vertex_pos_norm_tang_bitang_uv> TBNMesh;
-
-
     template<typename T>
     class MeshHelper {};
 
@@ -184,9 +177,6 @@ namespace mork {
 
 
     };
-
-    typedef MeshHelper<vertex_pos_norm_uv> BasicMeshHelper;
-
 }
 
 
