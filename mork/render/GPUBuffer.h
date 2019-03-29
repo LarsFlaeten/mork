@@ -20,6 +20,9 @@ namespace mork {
     template<typename T>
     class BufferView {
         public:
+        BufferView(const BufferView&) = delete;
+        BufferView& operator=(const BufferView&) = delete;
+
         BufferView(T& buf, BufferAccess access) : t(buf) {
             ptr = buf.mapBuffer(access);
         }
@@ -39,6 +42,10 @@ namespace mork {
     template<typename T>
     class ConstBufferView {
         public:
+        ConstBufferView(const ConstBufferView&) = delete;
+        ConstBufferView& operator=(const ConstBufferView&) = delete;
+
+
         ConstBufferView(const T& buf) : t(buf), ptr(buf.mapBuffer(BufferAccess::ReadOnly)) {}
 
         ~ConstBufferView() {
