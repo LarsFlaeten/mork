@@ -1,6 +1,9 @@
 # mork
 A minmal OpenGL rendering kernel.
 
+![alt text](https://raw.githubusercontent.com/LarsFlaeten/mork/master/web/moon_normal_map.png "Moon with normal map")
+
+
 ![alt text](https://raw.githubusercontent.com/LarsFlaeten/mork/master/web/teapot_reflective.png "Shiny teapot")
 
 This project is loosely inspired by Inrias ORK, but completely rewritten
