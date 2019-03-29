@@ -43,7 +43,7 @@ namespace mork {
         refractiveFactor(0.0f),            
         refractiveIndex(0.0f) {}
 
-    Material::Material(Material&& o) noexcept
+/*    Material::Material(Material&& o) noexcept
         : diffuseLayers(std::move(o.diffuseLayers)),
           specularLayers(std::move(o.specularLayers)),
           ambientLayers(std::move(o.ambientLayers)),
@@ -58,7 +58,7 @@ namespace mork {
           diffuseColor(o.diffuseColor),
           specularColor(o.specularColor),
           emissiveColor(o.emissiveColor){ }
-    
+  */  
     void Material::set(const Program& prog, const std::string& target) const {
         // Set base colors:        
         prog.getUniform(target + ".ambientColor").set(ambientColor);
@@ -112,6 +112,16 @@ namespace mork {
             prog.getUniform(target + ".emissiveLayers[" + num + "].op").set(emissiveLayers[i].op);
             prog.getUniform(target + ".emissiveLayers[" + num + "].blendFactor").set(emissiveLayers[i].blendFactor);
         }
+        
+        l = normalLayers.size();
+        prog.getUniform(target + ".numNormalLayers").set(l);
+        for(int i = 0; i < l; ++i) {
+            std::string num = std::to_string(i);
+            prog.getUniform(target + ".normalLayers[" + num + "].texture").set(tex++);
+            prog.getUniform(target + ".normalLayers[" + num + "].op").set(normalLayers[i].op);
+            prog.getUniform(target + ".normalLayers[" + num + "].blendFactor").set(normalLayers[i].blendFactor);
+        }
+
 
     }
 
@@ -140,6 +150,12 @@ namespace mork {
         for(int i = 0; i < l; ++i) {
             emissiveLayers[i].texture.bind(tex++);
         }
+        
+        l = normalLayers.size();
+        for(int i = 0; i < l; ++i) {
+            normalLayers[i].texture.bind(tex++);
+        }
+
 
     }
 

@@ -34,7 +34,10 @@ namespace mork {
     class Material {
         public:
             Material();
-            Material(Material&& o) noexcept;
+            Material(const Material&) = delete;
+            Material& operator=(const Material&) = delete;
+            Material(Material&& o) = default;
+            Material& operator=(Material&&) = default;
 
             void set(const Program& prog, const std::string& target) const;
             void bindTextures() const;
