@@ -2,7 +2,9 @@
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNorm;
-layout (location = 2) in vec2 aUv;
+layout (location = 2) in vec2 aTang;
+layout (location = 3) in vec2 aBitang;
+layout (location = 4) in vec2 aUv;
 
 out VS_OUT {
   vec3 normal;
@@ -31,7 +33,7 @@ in VS_OUT {
 } gs_in[];
 
 void generateNormal(int index) {
-   // Only draw normals the are eheading towards us? (= Front face)
+   // Only draw normals that are heading towards us? (= Front face)
    if(gs_in[index].normal.z <= 0.0) {
        gl_Position = gl_in[index].gl_Position;
        EmitVertex();
