@@ -38,7 +38,7 @@ namespace mork {
 
         virtual void bind() const = 0;
         virtual void unbind() const = 0;
- 
+
     protected:
       
         struct TextureData {
@@ -59,14 +59,14 @@ namespace mork {
 
     template <int dim>
     class Texture : public TextureBase {
-
+        public:
+            static Texture<dim> fromFile(const std::string& file, bool flip = true);
     };
  
     template<> class Texture<2> : public TextureBase
     {
         public:
             Texture<2>() : TextureBase(){
-                debug_logger("Texture<2> CTOR");
                 td.width = 0;
                 td.height = 0;
                 td.format = -1;
@@ -128,7 +128,12 @@ namespace mork {
             virtual void unbind() const {
                 glBindTexture(GL_TEXTURE_2D, 0);
             }
- 
+            
+            static Texture<2> fromFile(const std::string& filename, bool flip = false) {
+                Texture<2> tex;
+                tex.loadTexture(filename, flip);
+                return tex;
+            }
         protected:
             TextureData td;
     };
