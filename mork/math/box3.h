@@ -156,7 +156,7 @@ template <typename type> struct box3
 
     /**
      * Returns the characteristic length/norm of this bounding box
-     * i.e. the macimum size in wither dimesion.
+     * i.e. the maximum size in either dimension.
      * This allows norm to be used on objects with less than three dimensions,
      * (plane or line), and still get a meaningful characteristic length
      */
