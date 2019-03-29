@@ -10,13 +10,17 @@ namespace mork {
     template<typename vertex>
     class Mesh {
         public:
+            Mesh(const Mesh&) = delete;
+            Mesh& operator=(const Mesh&) = delete;
+            Mesh(Mesh&&) = default;
+            Mesh& operator=(Mesh&&) = default;
 
             Mesh(const std::vector<vertex>& vertices)
                 : materialIndex(0) {
                 setVertices(vertices);
             }
 
-            Mesh(const std::vector<vertex>& vertices, const std::vector<unsigned int> indices)
+            Mesh(const std::vector<vertex>& vertices, const std::vector<unsigned int>& indices)
                 : materialIndex(0) {
                 setVerticesIndexed(vertices, indices);
             }
@@ -46,7 +50,7 @@ namespace mork {
                 bounds = calculateBounds(vertices);
             }
 
-            void setVerticesIndexed(const std::vector<vertex>& vertices, const std::vector<unsigned int> indices) {
+            void setVerticesIndexed(const std::vector<vertex>& vertices, const std::vector<unsigned int>& indices) {
                 indexed = true;
                 numVertices = vertices.size();
                 numIndices = indices.size();
@@ -169,6 +173,20 @@ namespace mork {
             static Mesh<vertex_pos_norm_uv> PLANE();
             static Mesh<vertex_pos_norm_uv> BOX();
             static Mesh<vertex_pos_norm_uv> SPHERE(
+                    double rx, 
+                    double ry, 
+                    double rz, 
+                    unsigned int stacks, 
+                    unsigned int sectors);
+
+
+    };
+    
+    template <> class MeshHelper<vertex_pos_norm_tang_bitang_uv> {
+        public:
+            static Mesh<vertex_pos_norm_tang_bitang_uv> PLANE();
+            static Mesh<vertex_pos_norm_tang_bitang_uv> BOX();
+            static Mesh<vertex_pos_norm_tang_bitang_uv> SPHERE(
                     double rx, 
                     double ry, 
                     double rz, 
