@@ -16,6 +16,11 @@ namespace mork {
 
     class Model : public SceneNode {
         public:
+            Model(const Model&) = delete;
+            Model& operator=(const Model&) = delete;
+            Model(Model&&) = default;
+            Model& operator=(Model&&) = default;
+
             Model(const std::string& name);
             Model(const std::string& name, Mesh<VTBN>&& mesh, Material&& material);
 
@@ -27,6 +32,8 @@ namespace mork {
             std::vector<Material>&  getMaterials();
             
             const Mesh<VTBN>& getMesh(unsigned int index) const;
+            Mesh<VTBN>& getMesh(unsigned int index);
+
 
 			virtual void draw(const Program& prog) const;
         private:

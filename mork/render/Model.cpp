@@ -19,7 +19,10 @@ namespace mork {
         mork::mat4d modelMat = getLocalToWorld();
         mork::mat3d normalMat = ((modelMat.inverse()).transpose()).mat3x3();
         prog.getUniform("model").set(modelMat.cast<float>());
-        prog.getUniform("normalMat").set(normalMat.cast<float>());
+        
+        if(prog.queryUniform("normalMat")) {
+            prog.getUniform("normalMat").set(normalMat.cast<float>());
+        }
         
         for(unsigned int index : getMeshIndices()) {
             auto& mesh = model.getMesh(index);
@@ -70,6 +73,10 @@ namespace mork {
     }
     
     const Mesh<VTBN>& Model::getMesh(unsigned int index) const {
+        return meshes[index];
+    }
+    
+    Mesh<VTBN>& Model::getMesh(unsigned int index){
         return meshes[index];
     }
      
