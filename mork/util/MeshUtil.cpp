@@ -27,8 +27,8 @@ namespace mork {
         std::vector<unsigned int> indices(a_indices, a_indices + n_i);
 
         auto tbn_vertices = MeshUtil::calculateTangentSpace(vertices, indices);
-        
-        return Mesh<vertex_pos_norm_tang_bitang_uv>(tbn_vertices, indices);
+        auto mesh = Mesh<vertex_pos_norm_tang_bitang_uv>(std::move(tbn_vertices), std::move(indices)); 
+        return mesh;
 
     }
 
@@ -38,7 +38,7 @@ namespace mork {
     // Calculate bitangent according to https://learnopengl.com/Advanced-Lighting/Normal-Mapping
     std::vector<vertex_pos_norm_tang_bitang_uv> MeshUtil::calculateTangentSpace(
             const std::vector<vertex_pos_norm_uv>& vertices, 
-            const std::vector<unsigned int> indices) {
+            const std::vector<unsigned int>& indices) {
         
         std::vector<vertex_pos_norm_tang_bitang_uv> t_vertices;
         t_vertices.resize(vertices.size());
@@ -73,19 +73,19 @@ namespace mork {
 
             tv1.pos = v1.pos;
             tv1.uv = v1.uv;
-            tv1.norm = v1.norm;
+            tv1.norm += v1.norm;
             tv1.tang += tangent;
             tv1.bitang += bitangent;
             
             tv2.pos = v2.pos;
             tv2.uv = v2.uv;
-            tv2.norm = v2.norm;
+            tv2.norm += v2.norm;
             tv2.tang += tangent;
             tv2.bitang += bitangent;
             
             tv3.pos = v3.pos;
             tv3.uv = v3.uv;
-            tv3.norm = v3.norm;
+            tv3.norm += v3.norm;
             tv3.tang += tangent;
             tv3.bitang += bitangent;
  

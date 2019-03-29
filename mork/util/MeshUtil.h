@@ -13,7 +13,7 @@ namespace mork {
         // Performs TBN calculations based on input vertices and indices
         static std::vector<vertex_pos_norm_tang_bitang_uv> calculateTangentSpace(
             const std::vector<vertex_pos_norm_uv>& vertices, 
-            const std::vector<unsigned int> indices);
+            const std::vector<unsigned int>& indices);
  
     };
 
