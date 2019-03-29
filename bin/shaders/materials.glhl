@@ -27,11 +27,15 @@ struct Material {
     uint numSpecularLayers;
     uint numAmbientLayers;
     uint numEmissiveLayers;
+    uint numNormalLayers;
+
 
     TextureLayer diffuseLayers[MAX_TEXTURE_LAYERS];
     TextureLayer specularLayers[MAX_TEXTURE_LAYERS];
     TextureLayer ambientLayers[MAX_TEXTURE_LAYERS];
     TextureLayer emissiveLayers[MAX_TEXTURE_LAYERS];
+    TextureLayer normalLayers[MAX_TEXTURE_LAYERS];
+
 
 };
 
