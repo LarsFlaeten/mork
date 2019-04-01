@@ -118,7 +118,7 @@ public:
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        scene.getCamera().setPosition(mork::vec4d(-15, 10, 0, 1));
+        scene.getCamera().setPosition(mork::vec3d(-15, 10, 0));
         scene.getCamera().lookAt(mork::vec3d(1,-1,0), mork::vec3d(0, 0, 1));
 
         glEnable(GL_BLEND);
@@ -165,22 +165,22 @@ public:
             // Move camera foward 2.0 units / s
             mork::vec3d pos = camera.getPosition().xyz();
             pos += camera.getWorldForward()*this->getDt()*2.0;
-            camera.setPosition(mork::vec4d(pos));
+            camera.setPosition(pos);
         } else if(keys.count('S')) {
             // Move camera backwards 2.0 units / s
             mork::vec3d pos = camera.getPosition().xyz();
             pos -= camera.getWorldForward()*this->getDt()*2.0;
-            camera.setPosition(mork::vec4d(pos));
+            camera.setPosition(pos);
         } else if(keys.count('A')) {
             // Move camera left 2.0 units / s
             mork::vec3d pos = camera.getPosition().xyz();
             pos -= camera.getWorldRight()*this->getDt()*2.0;
-            camera.setPosition(mork::vec4d(pos));
+            camera.setPosition(pos);
         } else if(keys.count('D')) {
             // Move camera right 2.0 units / s
             mork::vec3d pos = camera.getPosition().xyz();
             pos += camera.getWorldRight()*this->getDt()*2.0;
-            camera.setPosition(mork::vec4d(pos));
+            camera.setPosition(pos);
         }
  
         

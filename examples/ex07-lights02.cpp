@@ -167,7 +167,7 @@ public:
         scene.getRoot().addChild(mork::SceneNode("lamp"));
 
         scene.getCamera().setFOV(radians(45.0));
-        scene.getCamera().setPosition(mork::vec4d(-12, 0, 0, 1));
+        scene.getCamera().setPosition(mork::vec3d(-12, 0, 0));
         scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
 
 

@@ -90,7 +90,7 @@ TEST_F(CameraTest, AbsPosTest)
     object.setLocalToParent(mat4d::translate(vec3d(10, 0, 0)));
 
 
-    scene.getCamera().setPosition(vec4d(-10, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(-10, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
 
   
@@ -130,7 +130,7 @@ TEST_F(CameraTest, RelPosTest)
 
     //std::cout << object->getLocalToParent() << std::endl;
 
-    scene.getCamera().setPosition(vec4d(-20, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(-20, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     scene.getCamera().setReference(object);
     //std::cout << scene.getCamera().getLocalToParent() << std::endl;
@@ -159,7 +159,7 @@ TEST_F(CameraTest, RelPosTest2)
     scene.getCamera().setReference(object);
     
     // These are now in objects frame of reference
-    scene.getCamera().setPosition(vec4d(-20, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(-20, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     //std::cout << scene.getCamera().getLocalToParent() << std::endl;
 
@@ -192,7 +192,7 @@ TEST_F(CameraTest, DirectionTest)
 {
     Scene scene;
 
-    scene.getCamera().setPosition(vec4d(0, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(0, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     scene.update();
     ASSERT_LT((scene.getCamera().getWorldPos() - mork::vec3d(0, 0, 0)).length(), 1.0E-6);
@@ -252,7 +252,7 @@ TEST_F(CameraTest, DirectionTest2)
     object.setLocalToParent(mat4d::rotatez(radians(90.0))*mat4d::translate(mork::vec3d(100, 0, 0)));
 
 
-    scene.getCamera().setPosition(vec4d(0, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(0, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0, 0, 1));
     scene.update();
     ASSERT_LT((scene.getCamera().getWorldPos() - mork::vec3d(0,100, 0)).length(), 1.0E-6);

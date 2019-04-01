@@ -75,12 +75,12 @@ namespace mork {
         throw std::runtime_error("Not implemented");
     }
 
-    void Camera::setPosition(const vec4d& pos) {
+    void Camera::setPosition(const vec3d& pos) {
         // Preserve current rotation:
         // TODO: localToParent or LocalToWorld?
         mat4d rot = mat4d(this->getRotation());
         
-        mat4d trans = mat4d::translate(pos.xyz());
+        mat4d trans = mat4d::translate(pos);
 
         this->setLocalToParent(trans * rot);
   
@@ -116,10 +116,10 @@ namespace mork {
                 
     }
      
-    void Camera::lookAt(const vec4d& position, const vec4d& target, const vec3d& up_dir) {
+    void Camera::lookAt(const vec3d& position, const vec3d& target, const vec3d& up_dir) {
         this->setPosition(position);
 
-        vec3d look_dir = (position - target).xyz();
+        vec3d look_dir = position - target;
         lookAt(look_dir, up_dir);
     
     }

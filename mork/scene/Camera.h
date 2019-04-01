@@ -16,10 +16,10 @@ namespace mork {
             Camera(const std::string& name, double fov, double aspect, double near, double far);
 
 
-            virtual void setPosition(const vec4d& pos);
+            virtual void setPosition(const vec3d& pos);
             virtual void setRotation(const mat3d& rot);
             virtual void lookAt(const vec3d& look_dir, const vec3d& up_dir);
-            virtual void lookAt(const vec4d& position, const vec4d& target, const vec3d& up);
+            virtual void lookAt(const vec3d& position, const vec3d& target, const vec3d& up);
             virtual mat3d getRotation() const;
             virtual vec4d getPosition() const;
             

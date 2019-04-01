@@ -60,7 +60,7 @@ TEST_F(FrustumTest, BBVisibilityTest)
     node.setLocalToParent(mat4d::translate(vec3d(10, 0, 0)));
    
     
-    scene.getCamera().setPosition(vec4d(-10, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(-10, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0,0,1));
     scene.getCamera().setFOV(radians(45.0));
     scene.getCamera().setAspectRatio(800, 600);
@@ -135,7 +135,7 @@ TEST_F(FrustumTest, PointVisibilityTest)
 {
     Scene scene;
     
-    scene.getCamera().setPosition(vec4d(0, 0, 0, 1));
+    scene.getCamera().setPosition(vec3d(0, 0, 0));
     scene.getCamera().lookAt(vec3d(1,0,0), vec3d(0,0,1));
     scene.getCamera().setFOV(radians(45.0));
     scene.getCamera().setAspectRatio(800, 600);

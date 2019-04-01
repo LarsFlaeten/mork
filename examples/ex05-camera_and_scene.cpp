@@ -118,7 +118,7 @@ public:
             scene.getRoot().addChild(mork::SceneNode(std::string("box") + std::to_string(i)));
         }
 
-        scene.getCamera().setPosition(mork::vec4d(-10, 0, 0, 1));
+        scene.getCamera().setPosition(mork::vec3d(-10, 0, 0));
         scene.getCamera().lookAt(mork::vec3d(1,0,0), mork::vec3d(0, 0, 1));
         scene.getCamera().setReference(scene.getRoot().getChild("box5"));
 
