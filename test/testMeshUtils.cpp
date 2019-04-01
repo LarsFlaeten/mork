@@ -50,8 +50,8 @@ TEST_F(MeshUtilsTest, StandardObjects)
 
     mork::Mesh<Vert> mesh(mork::MeshHelper<Vert>::BOX());
     ASSERT_EQ(mesh.getNumVertices(), 36);
-    ASSERT_EQ(mesh.getNumIndices(), 0);
-    ASSERT_EQ(mesh.isIndexed(), false);
+    ASSERT_EQ(mesh.getNumIndices(), 36);
+    ASSERT_EQ(mesh.isIndexed(), true);
 
     mork::Mesh<Vert> mesh2(mork::MeshHelper<Vert>::PLANE());
     ASSERT_EQ(mesh2.getNumVertices(), 4);
