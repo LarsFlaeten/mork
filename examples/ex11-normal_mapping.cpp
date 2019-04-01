@@ -26,79 +26,6 @@ using namespace std;
 
 static std::string window_title = "Normals";
 
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aNorm;\n"
-    "layout (location = 2) in vec3 aTang;\n"
-    "layout (location = 3) in vec3 aBitang;\n"
-    "layout (location = 4) in vec2 aUv;\n"
-    "\n"
-    "out VS_OUT {\n"
-    "  vec2 texCoord;\n"
-    "  vec3 fragPos;\n"
-    "  mat3 TBN;\n"
-    "} vs_out;\n"
-    "uniform mat4 projection;\n"
-    "uniform mat4 view;\n"
-    "uniform mat4 model;\n"
-    "uniform mat3 normalMat;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = projection * view * model * vec4(aPos, 1.0);\n"
-    "   vs_out.fragPos = vec3(model * vec4(aPos, 1.0));\n"
-    "   vs_out.texCoord = aUv;\n"
-    "   vec3 T = normalize(normalMat * aTang);\n"
-    "   vec3 B = normalize(normalMat * aBitang);\n"
-    "   vec3 N = normalize(normalMat * aNorm);\n"
-    "   vs_out.TBN = mat3(T, B, N);\n"
-    "}\0";
-
-const char *fragmentShaderSource = "#version 330 core\n"
-    "#include \"shaders/materials.glhl\"\n"
-    "#include \"shaders/lights.glhl\"\n"
-    "out vec4 FragColor;\n"
-    "in VS_OUT {\n"
-    "   vec2 texCoord;\n"
-    "   vec3 fragPos;\n"
-    "   mat3 TBN;\n"
-    "} vs_out;\n"
-    "\n"
-    "\n"
-    "uniform PointLight pointLight;\n"
-    "uniform DirLight dirLight;\n"
-    "uniform SpotLight spotLight;\n"
-    "uniform Material material;\n"
-    "uniform vec3 viewPos;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "   // Calculate normal:\n"
-    "   vec3 normal = vec3(0,0,1);\n"
-    "   if(material.numNormalLayers>0u) {\n"
-    "       normal = evaluateTextureLayers(vec3(0), material.normalLayers, material.numNormalLayers, vs_out.texCoord);\n"
-    "       normal = normalize(normal*2.0 - 1.0);\n"
-    "   }\n"
-    "   normal = normalize(vs_out.TBN * normal);\n"
-    "\n"
-    "   // Base color contribution:\n"
-    "   vec3 ambientColor = evaluateTextureLayers(material.ambientColor, material.ambientLayers, material.numAmbientLayers, vs_out.texCoord);\n"
-    "   vec3 diffuseColor = evaluateTextureLayers(material.diffuseColor, material.diffuseLayers, material.numDiffuseLayers, vs_out.texCoord);\n"
-    "   vec3 specularColor = evaluateTextureLayers(material.specularColor, material.specularLayers, material.numSpecularLayers, vs_out.texCoord);\n"
-    "   vec3 emissiveColor = evaluateTextureLayers(material.emissiveColor, material.emissiveLayers, material.numEmissiveLayers, vs_out.texCoord);\n"
-    "\n"
-    "   // Calculate light contribution:\n"
-    "   vec3 lightResult = vec3(0.0, 0.0, 0.0);\n"
-    "   vec3 viewDir = normalize(viewPos - vs_out.fragPos);\n"
-    "   lightResult += CalcPointLight(ambientColor, diffuseColor, specularColor, pointLight, normal, vs_out.fragPos, viewDir, material);\n"
-    "   lightResult += CalcDirLight(ambientColor, diffuseColor, specularColor, dirLight, normal, viewDir, material);\n"
-    "   lightResult += CalcSpotLight(ambientColor, diffuseColor, specularColor, spotLight, normal, vs_out.fragPos, viewPos, material);\n"
-    "\n"    
-    "\n"
-    "   vec3 total = emissiveColor + lightResult;\n"
-    "\n"
-    "   FragColor = vec4(total, 1.0);\n"
-    "}\n\0";
-
 class TextBox {
     public:
         TextBox(int width, int height) : 
@@ -149,7 +76,7 @@ class App : public mork::GlfwWindow {
 public:
     App()
             : mork::GlfwWindow(mork::Window::Parameters().size(800,600).name(window_title)),
-               prog(std::string(vertexShaderSource), std::string(fragmentShaderSource)),
+               prog(330, "shaders/ex11.glsl"),
                font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48)),
                textBox(800, 600),
                fsQuad(mork::MeshHelper<VN>::PLANE()),
@@ -180,13 +107,13 @@ public:
 
         // Material 2 - texture only
         mork::Material moonMatTexOnly;
-        moonMatTexOnly.diffuseLayers.push_back(mork::TextureLayer(mork::Texture<2>::fromFile("textures/moon-4k.png")));
+        moonMatTexOnly.diffuseLayers.push_back(mork::TextureLayer(mork::Texture<2>::fromFile("textures/moon-4k.png", true)));
         moon1->addMaterial(std::move(moonMatTexOnly));
 
         // Material 3 - normal map only
         mork::Material moonMatNormOnly;
         moonMatNormOnly.diffuseColor = mork::vec3f(1.0, 1.0, 1.0);
-        moonMatNormOnly.normalLayers.push_back(mork::TextureLayer(mork::Texture<2>::fromFile("textures/moon_normal.jpg")));
+        moonMatNormOnly.normalLayers.push_back(mork::TextureLayer(mork::Texture<2>::fromFile("textures/moon_normal.jpg", true)));
         moon1->addMaterial(std::move(moonMatNormOnly));
 
 
