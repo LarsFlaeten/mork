@@ -163,22 +163,22 @@ public:
 
         if(keys.count('W')) {
             // Move camera foward 2.0 units / s
-            mork::vec3d pos = camera.getPosition().xyz();
+            mork::vec3d pos = camera.getPosition();
             pos += camera.getWorldForward()*this->getDt()*2.0;
             camera.setPosition(pos);
         } else if(keys.count('S')) {
             // Move camera backwards 2.0 units / s
-            mork::vec3d pos = camera.getPosition().xyz();
+            mork::vec3d pos = camera.getPosition();
             pos -= camera.getWorldForward()*this->getDt()*2.0;
             camera.setPosition(pos);
         } else if(keys.count('A')) {
             // Move camera left 2.0 units / s
-            mork::vec3d pos = camera.getPosition().xyz();
+            mork::vec3d pos = camera.getPosition();
             pos -= camera.getWorldRight()*this->getDt()*2.0;
             camera.setPosition(pos);
         } else if(keys.count('D')) {
             // Move camera right 2.0 units / s
-            mork::vec3d pos = camera.getPosition().xyz();
+            mork::vec3d pos = camera.getPosition();
             pos += camera.getWorldRight()*this->getDt()*2.0;
             camera.setPosition(pos);
         }
