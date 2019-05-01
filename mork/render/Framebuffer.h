@@ -13,9 +13,8 @@ namespace mork {
         public:
             // Creates a new offscreen framebuffer
             // For now we assume a standard framebuffer width a color atachment and
-            //  a depth/stencil buffer.
-            //  TODO: Enable more advanced randertarget framebuffers
-            Framebuffer(int width, int height);
+            //  an optional depth/stencil buffer.
+            Framebuffer(int width, int height, bool depthStencil);
 
             virtual ~Framebuffer();
 

@@ -23,13 +23,15 @@ namespace mork {
         }
     }
 
-    Framebuffer::Framebuffer(int width, int height)
+    Framebuffer::Framebuffer(int width, int height, bool depthStencil)
         : clearColor(vec4f(0.0f, 0.0f, 0.0f, 1.0f)),
-            colorBuffer(std::make_unique<Texture<2> >()),
-            depthStencilBuffer(std::make_unique<Texture<2> >()),
-            size(vec2i(width, height))
+           size(vec2i(width, height))
     {
         
+        colorBuffer = std::make_unique<Texture<2> >();
+            
+        if(depthStencil)
+            depthStencilBuffer = std::make_unique<Texture<2> >();
                 
         glGenFramebuffers(1, &fbo);
 
@@ -50,7 +52,7 @@ namespace mork {
         }
 
         // TODO: Do the same below as above
-        if(depthStencilBuffer->getTextureId()>0) {
+        if(depthStencilBuffer && depthStencilBuffer->getTextureId()>0) {
             depthStencilBuffer->bind();
             auto dsb = depthStencilBuffer->getTextureId();
             glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, size.x, size.y, 0, 
@@ -69,7 +71,7 @@ namespace mork {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
         }
 
-        if(depthStencilBuffer->getTextureId()>0) {
+        if(depthStencilBuffer && depthStencilBuffer->getTextureId()>0) {
             auto dsb = depthStencilBuffer->getTextureId();
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, dsb, 0);
         }
@@ -127,7 +129,7 @@ namespace mork {
             size = _size;
 
             // Resize textures:
-            if(colorBuffer && depthStencilBuffer)
+            if(colorBuffer)
                 allocateBuffers();
         }
 
