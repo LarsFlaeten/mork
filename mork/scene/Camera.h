@@ -21,7 +21,7 @@ namespace mork {
             virtual void lookAt(const vec3d& look_dir, const vec3d& up_dir);
             virtual void lookAt(const vec3d& position, const vec3d& target, const vec3d& up);
             virtual mat3d getRotation() const;
-            virtual vec4d getPosition() const;
+            virtual vec3d getPosition() const;
             
             virtual vec3d getWorldForward() const;
             virtual vec3d getWorldUp() const;

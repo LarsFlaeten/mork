@@ -86,7 +86,7 @@ namespace mork {
   
     }
     void Camera::setRotation(const mat3d& _rot) {
-        mat4d trans = mat4d::translate(this->getPosition().xyz());
+        mat4d trans = mat4d::translate(this->getPosition());
         mat4d rot = mat4d(_rot);
         this->setLocalToParent(trans * rot);
     }
@@ -129,8 +129,8 @@ namespace mork {
         return this->getLocalToParent().mat3x3();
     }
 
-    vec4d Camera::getPosition() const {
-        return vec4d(this->getLocalToParent().translation());
+    vec3d Camera::getPosition() const {
+        return this->getLocalToParent().translation();
     }
     
     // Local camera fron is 0,0,-1, so tranform to world coordinates
