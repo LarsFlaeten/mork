@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <string_view>
 #include <iomanip>
 
@@ -52,7 +53,10 @@ namespace mork
             bool OK = print(file, dt, " ", name, " ", std::forward<Args>(args)...);
             {
                 std::lock_guard<std::mutex> lck(logger_mtx);
-                print(std::cout, name, std::forward<Args>(args)...);
+                std::ostringstream oss;
+                print(oss, name, std::forward<Args>(args)...);
+                _last = oss.str();
+                std::cout << oss.str() << std::endl;
                 if (!OK) {
                     print(std::cout, name, "-- Error writing to log file. --");
                 }
@@ -60,7 +64,10 @@ namespace mork
             return OK;
         }
 
+        const std::string& last() const {return _last;}
+
     private:
+        std::string _last;
         std::string name;
         std::ostream& file;
     };

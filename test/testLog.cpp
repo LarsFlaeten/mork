@@ -26,6 +26,16 @@ protected:
 LogTest::LogTest()
 {
 
+    mork::error_logger("TEST");
+    EXPECT_EQ(mork::error_logger.last(), "[ERROR] TEST\n");
+
+    mork::error_logger("TEST2");
+    EXPECT_NE(mork::error_logger.last(), "[ERROR] TEST\n");
+    EXPECT_EQ(mork::error_logger.last(), "[ERROR] TEST2\n");
+
+
+
+
 }
 
 LogTest::~LogTest()
