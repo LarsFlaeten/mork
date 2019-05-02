@@ -90,7 +90,53 @@ TEST_F(FramebufferTest, ClearColor)
 TEST_F(FramebufferTest, RenderBuffer01)
 {
     // Should not throw any exceptions
-    mork::Framebuffer fb(400, 300);
+    mork::Framebuffer fb(400, 300, true);
+
+    fb.bind();
+
+    ASSERT_EQ(fb.getSize().x, 400);
+    ASSERT_EQ(fb.getSize().y, 300);
+
+
+    fb.setSize(mork::vec2i(600, 400));
+    ASSERT_EQ(fb.getSize().x, 600);
+    ASSERT_EQ(fb.getSize().y, 400);
+
+
+    mork::Framebuffer::getDefault().bind();
+
+    ASSERT_EQ(fb.getSize().x, 600);
+    ASSERT_EQ(fb.getSize().y, 400);
+
+
+    fb.setSize(mork::vec2i(300, 200));
+    ASSERT_EQ(fb.getSize().x, 300);
+    ASSERT_EQ(fb.getSize().y, 200);
+
+    fb.bind();
+
+    ASSERT_EQ(fb.getSize().x, 300);
+    ASSERT_EQ(fb.getSize().y, 200);
+
+
+    fb.setSize(mork::vec2i(600, 400));
+    ASSERT_EQ(fb.getSize().x, 600);
+    ASSERT_EQ(fb.getSize().y, 400);
+
+    auto& def_fb = mork::Framebuffer::getDefault();
+    ASSERT_EQ(def_fb.getSize().x, 800);
+    ASSERT_EQ(def_fb.getSize().y, 600);
+
+
+
+    
+}
+
+
+TEST_F(FramebufferTest, RenderBuffer02)
+{
+    // Should not throw any exceptions
+    mork::Framebuffer fb(400, 300, false);
 
     fb.bind();
 
