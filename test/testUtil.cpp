@@ -58,4 +58,30 @@ TEST_F(UtilTest, Test2)
     ASSERT_EQ(test.length(), 12);
 }
 
+TEST_F(UtilTest, TestString2Vec3d)
+{
+    mork::vec3d v = mork::string2vec3d("1,2,3");
+
+    ASSERT_EQ(v, mork::vec3d(1, 2, 3));
+
+    v = mork::string2vec3d("1,  2,      3");
+    ASSERT_EQ(v, mork::vec3d(1, 2, 3));
+
+    v = mork::string2vec3d("-1,  2.34567, 3.12567");
+    ASSERT_EQ(v, mork::vec3d(-1, 2.34567, 3.12567));
+
+    v = mork::string2vec3d("-1.0e4,  2.34567e-4, 3.12567e0");
+    ASSERT_EQ(v, mork::vec3d(-1.0e4,  2.34567e-4, 3.12567e0));
+ 
+
+    ASSERT_THROW(v = mork::string2vec3d("7000,3, 1.0, 1.0"), std::invalid_argument);
+
+
+    ASSERT_THROW(v = mork::string2vec3d("1,2"), std::invalid_argument);
+
+    ASSERT_THROW(v = mork::string2vec3d("1,a, 3"), std::invalid_argument);
+
+
+}
+
 
