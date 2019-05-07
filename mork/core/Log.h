@@ -54,9 +54,9 @@ namespace mork
             {
                 std::lock_guard<std::mutex> lck(logger_mtx);
                 std::ostringstream oss;
-                print(oss, name, std::forward<Args>(args)...);
+                print(oss, dt, " ", name, " ", std::forward<Args>(args)...);
                 _last = oss.str();
-                std::cout << oss.str() << std::endl;
+                std::cout << oss.str();
                 if (!OK) {
                     print(std::cout, name, "-- Error writing to log file. --");
                 }
