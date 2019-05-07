@@ -1,5 +1,6 @@
 #include "mork/render/Material.h"
-
+#include "mork/resource/ResourceFactory.h"
+#include "mork/util/Util.h"
 
 namespace mork {
 
@@ -158,5 +159,101 @@ namespace mork {
 
 
     }
+
+    inline json materialSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Model schema",
+        "type": "object",
+        "description": "A material object",
+        "properties": {
+            "name": { "type": "string" },
+            "diffuseColor": { "type": "string" },
+            "diffuseLayers": { "type": "array", "items": { "type": "object"} },
+            "normalLayers": { "type": "array", "items": { "type": "object" } }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+    }
+    )"_json;
+
+
+    class MaterialResource: public ResourceTemplate<Material>
+    {
+		public:
+		    MaterialResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Material>(materialSchema)
+			{
+			    info_logger("Resource - Material");
+         	    const json& js = r.getDescriptor();
+                validator.validate(js);
+              
+                std::cout << js << std::endl;
+
+                std::string materialName = js["name"];
+
+                if(js.count("diffuseColor")) {
+                    json dcj = js["diffuseColor"];
+                    vec3d dc = string2vec3d(dcj.get<std::string>());
+                    material.diffuseColor = dc.cast<float>();
+                }
+
+                if(js.count("diffuseLayers")) {
+                    json diff = js["diffuseLayers"];
+                    for( auto& arrayObject : diff) {
+                        // This is a texture layer object, with a texture2d, an op and a blend factor
+                        Op op = Op::ADD;
+                        float bf = 1.0f;
+                       
+                        // TODO: get op and bf
+
+                        json texj = arrayObject["texture2d"];
+                        Resource& cr = r.addChildResource(Resource(manager, "texture2d", texj, texj["file"]));
+    
+                        auto tex = ResourceFactory<Texture<2>>::getInstance().create(manager, cr);
+                        
+                        material.diffuseLayers.push_back(TextureLayer(std::move(tex), op, bf)); 
+                    }
+                }
+                
+                if(js.count("normalLayers")) {
+                    json norm = js["normalLayers"];
+                    for( auto& arrayObject : norm) {
+                        // This is a texture layer object, with a texture2d, an op and a blend factor
+                        Op op = Op::ADD;
+                        float bf = 1.0f;
+                         // TODO: get op and bf
+
+                       
+                        json texj = arrayObject["texture2d"];
+                         
+                        Resource& cr = r.addChildResource(Resource(manager, "texture2d", texj, texj["file"]));
+    
+                        auto tex = ResourceFactory<Texture<2>>::getInstance().create(manager, cr);
+     
+                        material.normalLayers.push_back(TextureLayer(std::move(tex), op, bf)); 
+                    }
+                }
+                // TODO: get other layers
+
+
+
+
+            }
+
+            Material releaseResource() {
+				return std::move(material);
+
+            }
+		private:
+            Material material;			
+
+    };
+
+    inline std::string material = "material";
+
+    static ResourceFactory<Material>::Type<material, MaterialResource> MaterialType;
+
+
 
 }

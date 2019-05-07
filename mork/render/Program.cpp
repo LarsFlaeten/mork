@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 
+#include "mork/resource/ResourceFactory.h"
+
 namespace mork {
 
 Program::Program(int version, const std::string& src_path)
@@ -82,6 +84,8 @@ Program::Program(Program&& o) {
     _programID = o._programID;
     o._programID = 0;
 
+    uniforms = std::move(o.uniforms);
+
 }
 
 Program& Program::operator=(Program&& o) {
@@ -93,6 +97,9 @@ Program& Program::operator=(Program&& o) {
     
     _programID = o._programID;
     o._programID = 0;  
+
+    uniforms = std::move(o.uniforms);
+
 
 }
 
@@ -366,5 +373,103 @@ bool Program::queryUniform(const std::string& name) const {
     
     return true;
 }
- 
+
+inline json programSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Program schema",
+        "type": "object",
+        "description": "A program object",
+        "properties": {
+            "name": { "type": "string" },
+            "source": { "type": "string" },
+            "version": { "type": "integer" } 
+        },
+        "required": ["source"],
+        "additionalProperties": false
+    }
+    )"_json;
+
+    class ProgramResource: public ResourceTemplate<Program>
+    {
+		public:
+		    ProgramResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Program>(programSchema)
+			{
+	            info_logger("Resource - Program");
+         	    const json& js = r.getDescriptor();
+                validator.validate(js);
+
+                path = js["source"].get<std::string>();
+
+                version = 330;
+                if(js.count("version"))
+                    version = js["version"].get<int>();
+
+            }
+
+            Program releaseResource() {
+				return Program(version, path);
+            }
+		private:
+            std::string path;
+            int version;
+
+    };
+
+    inline std::string program = "program";
+
+    static ResourceFactory<Program>::Type<program, ProgramResource> ProgramType;
+
+
+inline json programPoolSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "ProgramPool schema",
+        "type": "object",
+        "description": "A program pool object",
+        "properties": {
+            "name": { "type": "string" },
+            "programs": { 
+                "type": "array",
+                "items": {"type": "object" }
+            }
+        },
+        "additionalProperties": false
+    }
+    )"_json;
+
+    class ProgramPoolResource: public ResourceTemplate<ProgramPool>
+    {
+		public:
+		    ProgramPoolResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<ProgramPool>(programPoolSchema)
+			{
+	            info_logger("Resource - ProgramPool");
+         	    const json& js = r.getDescriptor();
+                validator.validate(js);
+
+                json parray = js["programs"];
+                for(auto& arrayObject : parray) {
+                    auto& name = arrayObject["name"];
+                    Resource& prog_r = r.addChildResource(Resource(manager, "program", arrayObject, arrayObject["source"]));
+                    auto prog = ResourceFactory<Program>::getInstance().create(manager, prog_r);
+                    
+                    pp.insert({name,std::move(prog)});    
+                }                
+
+            }
+
+            ProgramPool releaseResource() {
+				return std::move(pp);
+            }
+		private:
+            ProgramPool pp;			
+
+    };
+
+    inline std::string programPool = "programPool";
+
+    static ResourceFactory<ProgramPool>::Type<programPool, ProgramPoolResource> ProgramPoolType;
+
 }

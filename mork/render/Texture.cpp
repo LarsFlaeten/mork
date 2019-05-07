@@ -4,6 +4,8 @@
 #include "mork/core/Log.h"
 #include "mork/core/stb_image.h"
 
+#include "mork/resource/ResourceFactory.h"
+
 #include <stdexcept>
 
 namespace mork {
@@ -204,6 +206,62 @@ namespace mork {
     void CubeMapTexture::loadTexture(const std::string& file, bool flip_vertical) {}
 
     void CubeMapTexture::loadTexture(int width, int height, int internalformat, unsigned char* data, bool generateMip) {}
+
+    inline json texture2dSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Texture<2> schema",
+        "type": "object",
+        "description": "A 2d texture object",
+        "properties": {
+            "file": { "type": "string" },
+            "flip": { "type": "boolean" } 
+        },
+        "additionalProperties": false
+    }
+    )"_json;
+
+    class Texture2dResource: public ResourceTemplate<Texture<2> >
+    {
+		public:
+		    Texture2dResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Texture<2> >(texture2dSchema)
+			{
+	            info_logger("Resource - Texture2d");
+         	    const json& js = r.getDescriptor();
+                validator.validate(js);
+               
+                bool flip = false;
+                if(js.count("flip")) {
+                    flip = js["flip"].get<bool>();
+                }
+                
+                if(js.count("file")) {
+                    std::string file = js["file"].get<std::string>();
+                    info_logger("Resource - loading texture: ", file);
+                    tex.loadTexture(file, flip);
+                }
+                
+                // TODO: handle min, mag etc
+
+
+
+
+            }
+
+            Texture<2> releaseResource() {
+				return std::move(tex);
+
+            }
+		private:
+            Texture<2> tex;			
+
+    };
+
+    inline std::string texture2d = "texture2d";
+
+    static ResourceFactory<Texture<2> >::Type<texture2d, Texture2dResource> Texture2dType;
+
 
 
 }

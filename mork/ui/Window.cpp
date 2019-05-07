@@ -40,8 +40,9 @@
  */
 
 #include "Window.h"
+#include "mork/resource/ResourceFactory.h"
 
-using namespace std;
+#include <string>
 
 namespace mork
 {
@@ -52,7 +53,7 @@ Window::Parameters::Parameters() :
 {
 }
 
-string Window::Parameters::name() const
+std::string Window::Parameters::name() const
 {
     return _name;
 }
@@ -97,7 +98,7 @@ bool Window::Parameters::multiSample() const
     return _multiSample;
 }
 
-Window::Parameters &Window::Parameters::name(const string name)
+Window::Parameters &Window::Parameters::name(const std::string name)
 {
     _name = name;
     return *this;
@@ -142,12 +143,130 @@ Window::Parameters &Window::Parameters::multiSample(bool multiSample)
     return *this;
 }
 
-Window::Window(const Parameters &params) : EventHandler()
+Window::Window(const Parameters &params) 
+    : EventHandler(), windowTitle(params.name())
 {
 }
 
 Window::~Window()
 {
 }
+
+const std::string& Window::getTitle() const { return windowTitle; }
+
+
+inline json parametersSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Window parameters schema",
+        "type": "object",
+        "description": "A window paraemeters object",
+        "properties": {
+            "name": { "type": "string" },
+            "title": { "type": "string" },
+            "version": { 
+                "type": "object",
+                "properties": {
+                    "major": { "type": "integer" },
+                    "minor": { "type": "integer" },
+                    "debug": { "type": "boolean" }
+                },
+                "required": ["major", "minor", "debug"],
+                "additionalProperties": false
+            },
+            "width": { "type": "integer" },
+            "height": { "type": "integer" },
+            "alpha": { "type": "boolean" },
+            "depth": { "type": "boolean" },
+            "stencil": { "type": "boolean" },
+            "mulitSample": { "type": "boolean" }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+    }
+    )"_json;
+
+
+    class ParametersResource: public ResourceTemplate<Window::Parameters>
+    {
+		public:
+		    ParametersResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Window::Parameters>(parametersSchema), parameters()
+			{
+		        info_logger("Resource - Parameters");
+                
+                const json& js = r.getDescriptor();
+                debug_logger("desc: " , js);
+                validator.validate(js);
+
+                // For default values, see Window::Parameters constructor
+                if(js.count("title")) {
+                    parameters.name(js["title"].get<std::string>());
+                }
+
+                if(js.count("width") || js.count("height")) {
+                    if(!(js.count("width") && js.count("height")))
+                    {
+                        error_logger("Both width and height must be given");
+                        throw std::invalid_argument(error_logger.last());
+                    }    
+                    parameters.size(js["width"].get<int>(), js["height"].get<int>());
+                }
+
+                if(js.count("version")) {
+                    json ver = js["version"];
+                    
+                    auto maj = ver["major"].get<int>();
+                    auto min = ver["minor"].get<int>();
+                    auto debug = ver["debug"].get<bool>();
+                    parameters.version(maj, min, debug);
+
+
+                }                
+                if(js.count("alpha")) {
+                    parameters.alpha(js["alpha"].get<bool>());
+                }
+
+                if(js.count("depth")) {
+                    parameters.depth(js["depth"].get<bool>());
+                }
+
+                if(js.count("stencil")) {
+                    parameters.stencil(js["stencil"].get<bool>());
+                }
+
+                if(js.count("mulitSample")) {
+                    parameters.multiSample(js["mulitSample"].get<bool>());
+                }
+               
+                const auto& p = parameters;
+                info_logger(
+                        "Created window: \n\tsize: ", p.width(), " x ", p.height(),
+                        "\n\tOpenGL version: ", p.getVersion().x, ".", p.getVersion().y,
+                        "\n\tDebug context: ", p.debug(),
+                        "\n\tAlpha: ", p.alpha(),
+                        "\n\tDepth: ", p.depth(),
+                        "\n\tStencil:", p.stencil(),
+                        "\n\tMultiSample: ", p.multiSample());
+
+
+
+
+
+		    }
+
+            Window::Parameters releaseResource() {
+				return std::move(parameters);
+
+            }
+		private:
+            Window::Parameters parameters;			
+
+    };
+
+    inline std::string _parameters = "windowParameters";
+
+    static ResourceFactory<Window::Parameters>::Type<_parameters, ParametersResource> ParametersType;
+
 
 }

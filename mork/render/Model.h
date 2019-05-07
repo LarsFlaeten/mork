@@ -34,6 +34,7 @@ namespace mork {
             const Mesh<VTBN>& getMesh(unsigned int index) const;
             Mesh<VTBN>& getMesh(unsigned int index);
 
+            unsigned int getNumMeshes() const;
 
 			virtual void draw(const Program& prog) const;
         private:

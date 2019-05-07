@@ -13,8 +13,6 @@ namespace mork {
         public:
             Scene();
             
-            virtual ~Scene();
-
             const SceneNode& getRoot() const;
 
             SceneNode& getRoot();
@@ -28,7 +26,6 @@ namespace mork {
 
             void    draw(const Program& prog);
 
-            void addCamera(std::shared_ptr<Camera> camera);
 
         private:
 

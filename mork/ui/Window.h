@@ -219,6 +219,15 @@ public:
      * Starts the user interface event processing loop.
      */
     virtual void start() = 0;
+
+    /**
+     * Returns the title of this window
+     */
+    const std::string& getTitle() const;
+
+private:
+    std::string windowTitle;
+
 };
 
 }

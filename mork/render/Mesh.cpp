@@ -1,7 +1,11 @@
 #include "Mesh.h"
 
+#include "mork/resource/ResourceFactory.h"
+#include "mork/util/Util.h"
 #include <mork/util/MeshUtil.h>
 #include <mork/core/Log.h>
+
+
 #include <cmath>
 
 namespace mork {
@@ -213,6 +217,95 @@ Mesh<VTBN> MeshHelper<VTBN>::SPHERE(double rx, double ry, double rz, unsigned in
     return sphereTBN;
 }
  
+    inline json meshSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Mesh schema",
+        "type": "object",
+        "description": "A mesh object",
+        "oneOf": [
+			{
+                "properties" : {
+            	    "sphere": { "type": "object" },
+                    "materialIndex": { "type": "integer" }
+                },
+                "required": ["sphere", "materialIndex"],
+                "additionalProperties": false
+            },
+			{
+                "properties" : {
+            	    "box": { "type": "object" },
+                    "materialIndex": { "type": "integer" }
+                },
+                "required": ["box", "materialIndex"],
+                "additionalProperties": false
+            },
+			{
+                "properties" : {
+            	    "plane": { "type": "object" },
+                    "materialIndex": { "type": "integer" }
+                },
+                "required": ["plane", "materialIndex"],
+                "additionalProperties": false
+            }
+		]
+    }
+    )"_json;
+
+
+    class MeshResource: public ResourceTemplate<Mesh<VTBN> >
+    {
+		public:
+		    MeshResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Mesh<VTBN> >(meshSchema)
+			{
+				info_logger("Resource - Mesh");
+            	const json& js = r.getDescriptor();
+                validator.validate(js);
+                
+                materialIndex = -1;
+                if(js.count("materialIndex")) {               
+				    materialIndex = js["materialIndex"].get<int>();
+                    if(materialIndex < 0)
+                        warn_logger("Warning, materialIndex < 0 specificed, ignoring");    
+                }
+                resource = js;
+		    }
+
+            Mesh<VTBN> releaseResource() {
+				if(resource.count("sphere")) {
+                    json sphere = resource["sphere"];
+                    vec3d r = string2vec3d(sphere["radii"]);
+                    
+                    int stacks = 40;
+                    int slices = 80;
+                    if(sphere.count("slices"))
+                        slices = sphere["slices"].get<int>();
+                    if(sphere.count("stacks"))
+                        slices = sphere["stacks"].get<int>();
+                    if(slices < 0 || stacks < 0)
+                        throw std::invalid_argument("Sphere: slices/stacks cannot be negative");
+
+                    auto m = MeshHelper<VTBN>::SPHERE(r.x, r.y, r.z, stacks, slices);
+                    if(materialIndex > 0)
+                        m.setMaterialIndex(materialIndex);
+                    return std::move(m);
+				}
+				else
+                    throw std::runtime_error("Unknown resource,\n " + resource.get<std::string>());
+
+
+            }
+		private:
+            json resource;
+			int materialIndex;		
+
+    };
+
+    inline std::string mesh = "mesh";
+
+    static ResourceFactory<Mesh<VTBN> >::Type<mesh, MeshResource> MeshType;
+
 
 
 

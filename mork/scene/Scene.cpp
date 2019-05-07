@@ -1,14 +1,10 @@
 #include "mork/scene/Scene.h"
+#include "mork/resource/ResourceFactory.h"
+#include "mork/util/Util.h"
 
 namespace mork {
 
-    Scene::Scene() {
-    
-    }
-
-    Scene::~Scene() {
-
-    }
+    Scene::Scene() : root("root") {}
 
     const SceneNode& Scene::getRoot() const {
         return root;
@@ -72,4 +68,107 @@ namespace mork {
             computeVisibility(cam, child, v);
         }
     }
+
+    inline json sceneSchema = R"(
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Scene schema",
+        "type": "object",
+        "description": "A scene object",
+        "properties": {
+            "name": { "type": "string" },
+            "rootNode": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string", "pattern": "^(root)$" },
+                    "childNodes": {
+                        "type": "array",
+                        "items": [
+                            { 
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string" }
+                                } 
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["name"] 
+            },
+            "camera": { "type": "object" }
+        },
+        "additionalProperties": false,
+        "required": ["name"]
+    }
+    )"_json;
+
+
+    class SceneResource: public ResourceTemplate<Scene>
+    {
+		public:
+		    SceneResource(ResourceManager& manager, Resource& r) :
+				ResourceTemplate<Scene>(sceneSchema), scene()
+			{
+		        info_logger("Resource - Scene");
+            	const json& js = r.getDescriptor();
+                validator.validate(js);
+
+				if(js.count("rootNode")) {
+					json root = js["rootNode"];	
+                	// Root node is implicity created by scene. So we add any children
+                    // to the scenes' root node:
+                    for(auto j : root["childNodes"]) {
+                        for( auto& [type, value] : j.items() ) {
+                            // We require that the node has a name property (see schema)
+                            const std::string& name = value["name"];
+                            Resource& node_r = r.addChildResource(Resource(manager, type, value, r.getFilePath()));
+                            
+                            // Assume key is a Node or a derived class:
+                            auto sceneNodePtr = ResourceFactory<std::unique_ptr<SceneNode> >::getInstance().create(manager, node_r);
+                            scene.getRoot().addChild(std::move(sceneNodePtr));
+                        }
+
+                    }
+                    
+
+				}
+
+                if(js.count("camera")) {
+                    auto& cam = scene.getCamera();
+                    json camj = js["camera"];
+                    if(camj.count("position"))
+                        cam.setPosition(string2vec3d(camj["position"]));
+                    if(camj.count("lookAt")) {
+                        json lookAt = camj["lookAt"];
+                        vec3d direction = string2vec3d(lookAt["direction"]);
+                        vec3d up = string2vec3d(lookAt["up"]);
+                        cam.lookAt(direction, up);
+                    }
+
+                    double farClip = cam.getFarClippingPlane();
+                    double nearClip = cam.getNearClippingPlane();
+                    if(camj.count("farClippingPlane"))
+                        farClip = camj["farClippingPlane"].get<double>();
+                    if(camj.count("nearClippingPlane"))
+                        nearClip = camj["nearClippingPlane"].get<double>();
+                    cam.setClippingPlanes(nearClip, farClip);
+
+                }
+			}
+
+            Scene releaseResource() {
+				return std::move(scene);
+
+            }
+		private:
+			Scene scene;			
+
+    };
+
+    inline std::string scene = "scene";
+
+    static ResourceFactory<Scene>::Type<scene, SceneResource> SceneType;
+
+
 }

@@ -55,6 +55,10 @@ private:
 };
 
 
+// a resource pool of programs
+// A simple unordered map wrapper, with resource initialization in the source file
+using ProgramPool = std::unordered_map<std::string, Program>;
+
 
 }
 

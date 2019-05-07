@@ -11,6 +11,7 @@ include_directories(
     ${GTEST_INCLUDE_DIRS}
     ${GMOCK_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/libraries
 )
 
 set(EXENAME runTests)
