@@ -1,4 +1,6 @@
 #include "../mork/util/Util.h"
+#include "../mork/util/Time.h"
+#include "../mork/util/File.h"
 #include "../mork/core/Log.h"
 
 #include <gtest/gtest.h>
@@ -84,4 +86,31 @@ TEST_F(UtilTest, TestString2Vec3d)
 
 }
 
+TEST_F(UtilTest, TestTime01) {
+
+    auto t = std::chrono::system_clock::now();
+  
+    mork::operator<<(std::cout,t) << std::endl;
+
+
+
+
+
+}
+
+TEST_F(UtilTest, TestFile01) {
+
+    auto t = mork::getLastModifiedTime("ex12.json");
+  
+    mork::operator<<(std::cout,t) << std::endl;
+}
+
+TEST_F(UtilTest, TestFile02) {
+    mork::info_logger("The following error is expected");
+    ASSERT_THROW(
+        {
+            auto t = mork::getLastModifiedTime("/no/such/file.json");
+        }, std::runtime_error);
+  
+}
 
