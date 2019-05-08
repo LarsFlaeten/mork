@@ -4,7 +4,7 @@ set(LIBNAME "mork")
 message(STATUS "****    MORK    ****")
 message(STATUS "PROJECT_SOURCE_DIR: " ${PROJECT_SOURCE_DIR})
 
-file(GLOB SOURCE_FILES *.cpp */*.cpp */*.c)
+file(GLOB SOURCE_FILES *.cpp */*.cpp */*.c */*.cc)
 
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libraries ${PROJECT_SOURCE_DIR}/libraries/freetype/include ${PROJECT_SOURCE_DIR}/libraries/nlohmann)
 
