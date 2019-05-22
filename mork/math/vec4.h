@@ -49,6 +49,8 @@
 namespace mork
 {
 
+    template <typename type> class vec3;
+
 /**
  * A 4D vector.
  * @ingroup math

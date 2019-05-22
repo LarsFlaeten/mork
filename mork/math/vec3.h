@@ -49,9 +49,14 @@
 #include "pmath.h"
 
 #include "mork/math/vec2.h"
+#include "mork/math/vec4.h"
+
+
 
 namespace mork
 {
+
+    template <typename type> class vec4;
 
 /**
  * A 3D vector.
@@ -94,6 +99,17 @@ public:
      * Creates a new vector as a copy of the given vector.
      */
     vec3(const vec3& v);
+
+    /**
+     * Creates a new vector as an expansion of the given 2d vector.
+     */
+    vec3(const vec2<type>& v);
+
+    /**
+     * Creates a new vector as a truncation of the given 4d vector.
+     */
+    vec3(const vec4<type>& v);
+
 
     /**
      * Returns the coordinate of this vector whose index is given.
@@ -294,6 +310,17 @@ template <typename type>
 inline vec3<type>::vec3(const vec3& v) : x(v.x), y(v.y), z(v.z)
 {
 }
+
+template <typename type>
+inline vec3<type>::vec3(const vec2<type>& v) : x(v.x), y(v.y), z(0)
+{
+}
+
+template <typename type>
+inline vec3<type>::vec3(const vec4<type>& v) : x(v.x), y(v.y), z(v.z)
+{
+}
+
 
 template <typename type>
 inline type vec3<type>::operator[](const int i) const
