@@ -45,7 +45,7 @@ const char kVertexShader[] = R"(
       gl_Position = vertex;
     })";
 
-#include "mork/atmosphere/demo/demo.glsl.inc"
+//#include "mork/atmosphere/demo/demo.glsl.inc"
 
 
 
@@ -263,11 +263,15 @@ atmosphere:
             */
             mork::Shader vs(330, kVertexShader, mork::Shader::Type::VERTEX, "");
 
+
+            std::ifstream is("shaders/atmo_demo.glsl");
+            std::stringstream ss;
+            ss << is.rdbuf();
             const std::string fragment_shader_str =
                 std::string(use_luminance_ != NONE ? "#define USE_LUMINANCE\n" : "") +
                 "const float kLengthUnitInMeters = " +
                 std::to_string(kLengthUnitInMeters) + ";\n" +
-                demo_glsl;
+                ss.str();
      
             mork::Shader fs(330, fragment_shader_str, mork::Shader::Type::FRAGMENT, "");
 
