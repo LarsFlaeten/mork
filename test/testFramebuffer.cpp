@@ -131,7 +131,7 @@ TEST_F(FramebufferTest, RenderBuffer01)
 
     
 }
-
+ 
 
 TEST_F(FramebufferTest, RenderBuffer02)
 {
@@ -178,4 +178,15 @@ TEST_F(FramebufferTest, RenderBuffer02)
     
 }
 
+TEST_F(FramebufferTest, RGBSupportTest)
+{
+    mork::info_logger("RGB support 32 bit: ",
+    (mork::Framebuffer::isFramebufferRgbFormatSupported(false) ? "TRUE" : "FALSE"));
 
+	mork::info_logger("RGB support 16 bit: ",
+    (mork::Framebuffer::isFramebufferRgbFormatSupported(true) ? "TRUE" : "FALSE"));
+
+
+
+
+}
