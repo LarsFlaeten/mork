@@ -44,6 +44,7 @@ namespace mork {
         struct TextureData {
             int width;
             int height;
+            int depth;
             int format;
         };
 
@@ -69,6 +70,7 @@ namespace mork {
             Texture<2>() : TextureBase(){
                 td.width = 0;
                 td.height = 0;
+                td.depth = 0;
                 td.format = -1;
             }
 
@@ -82,6 +84,37 @@ namespace mork {
                 texture = o.texture; o.texture = 0;
                 td = o.td;  
                 return *this;
+
+            }
+
+            // Creates an empty texture used as rendertarget etc
+            Texture<2>(int width, int height, GLenum format, bool half_precision)
+                : TextureBase() {
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, texture);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+                if(format != GL_RGBA && format != GL_RGB) {
+                    error_logger("Unspported format: ", format, ", only supported are GL_RGBA and GL_RGB.");
+                    throw std::runtime_error(error_logger.last());
+                }
+                
+                GLenum internal_format = format == GL_RGBA ?
+                    (half_precision ? GL_RGBA16F : GL_RGBA32F) :
+                    (half_precision ? GL_RGB16F : GL_RGB32F);
+ 
+                
+                glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0,
+                    GL_RGBA, GL_FLOAT, NULL);
+                
+                td.width = width;
+                td.height = height;
+                td.depth = 1;
+                td.format = format;
 
             }
 
@@ -138,6 +171,100 @@ namespace mork {
             TextureData td;
     };
 
+    template<> class Texture<3> : public TextureBase
+    {
+        public:
+            Texture<3>() : TextureBase(){
+                td.width = 0;
+                td.height = 0;
+                td.depth = 0;
+                td.format = -1;
+            }
+
+            Texture<3>(Texture<3> && other) noexcept {
+                texture = other.texture;
+                other.texture = 0;
+                td = other.td;
+            }
+            
+            Texture<3>& operator=(Texture<3>&& o) noexcept {
+                texture = o.texture; o.texture = 0;
+                td = o.td;  
+                return *this;
+
+            }
+
+            // Creates an empty texture used as rendertarget etc
+            Texture<3>(int width, int height, int depth, GLenum format, bool half_precision)
+                : TextureBase() {
+                
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_3D, texture);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+                glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+                if(format != GL_RGBA && format != GL_RGB) {
+                    error_logger("Unspported format: ", format, ", only supported are GL_RGBA and GL_RGB.");
+                    throw std::runtime_error(error_logger.last());
+                }
+                GLenum internal_format = format == GL_RGBA ?
+                    (half_precision ? GL_RGBA16F : GL_RGBA32F) :
+                    (half_precision ? GL_RGB16F : GL_RGB32F);
+                glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0,
+                    format, GL_FLOAT, NULL);
+               
+                
+                td.width = width;
+                td.height = height;
+                td.depth = depth;
+                td.format = format; 
+            }
+
+            virtual void bind(int texUnit) const {
+                TextureBase::bind(texUnit);
+            }
+    
+            virtual void unbind(int texUnit) const {
+                TextureBase::unbind(texUnit);
+            }
+   
+            virtual int getWidth() const {
+                return td.width;
+            }
+            
+            virtual int getHeight() const{
+                return td.height;
+            }
+            
+            virtual int getDepth() const {
+                return td.depth;
+            }
+            
+            virtual int getFormat() const {
+                return td.format;
+            }
+
+            virtual void bind() const {
+                glBindTexture(GL_TEXTURE_3D, texture);
+            }
+    
+            virtual void unbind() const {
+                glBindTexture(GL_TEXTURE_3D, 0);
+            }
+            
+            virtual void loadTexture(const std::string& file, bool flip_vertical) {
+                throw std::runtime_error("LoadTexture not implemented for 3D texture");
+
+            }
+ 
+        protected:
+            TextureData td;
+    };
+
+ 
     // The only specialization of a cubemap texture is the bind methods
     // and the loading of the texture
     class CubeMapTexture : public Texture<2> {
