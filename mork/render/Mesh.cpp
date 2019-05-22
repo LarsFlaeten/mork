@@ -13,6 +13,65 @@ namespace mork {
 using VN = vertex_pos_norm_uv;
 using VTBN = vertex_pos_norm_tang_bitang_uv;
 
+Mesh<vertex_pos2> MeshHelper<vertex_pos2>::PLANE() {
+    const std::vector<unsigned int> indices = {  
+        1, 0, 3,  // first Triangle
+        2, 1, 3   // second Triangle
+    };
+
+
+    const std::vector<mork::vertex_pos2> vertices = {
+        // positions                    
+        {mork::vec2f(1.0f,  1.0f)},   // top right
+        {mork::vec2f(1.0f,  -1.0f)},   // bottom right
+        {mork::vec2f(-1.0f,  -1.0f)},   // bottom left
+        {mork::vec2f(-1.0f,  1.0f)}    // top left 
+    }; 
+
+    return Mesh<vertex_pos2>(vertices, indices);
+    
+}
+
+Mesh<vertex_pos3> MeshHelper<vertex_pos3>::PLANE() {
+    const std::vector<unsigned int> indices = {  
+        1, 0, 3,  // first Triangle
+        2, 1, 3   // second Triangle
+    };
+
+
+    const std::vector<mork::vertex_pos3> vertices = {
+        // positions                    
+        {mork::vec3f(1.0f,  1.0f, 0.0f)},   // top right
+        {mork::vec3f(1.0f,  -1.0f, 0.0f)},   // bottom right
+        {mork::vec3f(-1.0f,  -1.0f, 0.0f)},   // bottom left
+        {mork::vec3f(-1.0f,  1.0f, 0.0f)}    // top left 
+    }; 
+
+    return Mesh<vertex_pos3>(vertices, indices);
+    
+}
+
+Mesh<vertex_pos4> MeshHelper<vertex_pos4>::PLANE() {
+    const std::vector<unsigned int> indices = {  
+        1, 0, 3,  // first Triangle
+        2, 1, 3   // second Triangle
+    };
+
+
+    const std::vector<mork::vertex_pos4> vertices = {
+        // positions                    
+        {mork::vec4f(1.0f,  1.0f, 0.0f, 1.0f)},   // top right
+        {mork::vec4f(1.0f,  -1.0f, 0.0f, 1.0f)},   // bottom right
+        {mork::vec4f(-1.0f,  -1.0f, 0.0f, 1.0f)},   // bottom left
+        {mork::vec4f(-1.0f,  1.0f, 0.0f, 1.0f)}    // top left 
+    }; 
+
+    return Mesh<vertex_pos4>(vertices, indices);
+    
+}
+
+
+
 Mesh<vertex_pos_norm_uv> MeshHelper<vertex_pos_norm_uv>::PLANE() {
     const std::vector<unsigned int> indices = {  
         1, 0, 3,  // first Triangle

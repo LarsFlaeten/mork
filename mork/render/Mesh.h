@@ -7,8 +7,16 @@
 
 namespace mork {
 
+    // Virtual interface for drawable meshes
+    class MeshBase {
+    public:
+        virtual void draw() const = 0;
+
+    };
+
+
     template<typename vertex>
-    class Mesh {
+    class Mesh : public MeshBase {
         public:
             Mesh(const Mesh&) = delete;
             Mesh& operator=(const Mesh&) = delete;
@@ -93,7 +101,7 @@ namespace mork {
                 materialIndex = index;
             }
 
-            void draw() const {
+            virtual void draw() const {
                 vao.bind();
                 
                 if(!indexed) 
@@ -101,6 +109,8 @@ namespace mork {
                 else {
                     glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0); 
                 }
+
+                vao.unbind();
 
             }
 
@@ -116,7 +126,7 @@ namespace mork {
                 
                 // Set initial values
                 if(vertices.size()>0) {
-                    const auto& p = vertices[0].pos;
+                    const auto& p = mork::vec3f(vertices[0].pos);
 
                     b.xmax = p.x;
                     b.xmin = p.x;
@@ -127,23 +137,25 @@ namespace mork {
                 }
 
                 for(auto& v : vertices) {
-                    if(v.pos.x > b.xmax)
-                        b.xmax = v.pos.x;
+                    auto p = mork::vec3f(v.pos);
 
-                    if(v.pos.x < b.xmin)
-                        b.xmin = v.pos.x;
+                    if(p.x > b.xmax)
+                        b.xmax = p.x;
 
-                    if(v.pos.y > b.ymax)
-                        b.ymax = v.pos.y;
+                    if(p.x < b.xmin)
+                        b.xmin = p.x;
 
-                    if(v.pos.y < b.ymin)
-                        b.ymin = v.pos.y;
+                    if(p.y > b.ymax)
+                        b.ymax = p.y;
 
-                    if(v.pos.z > b.zmax)
-                        b.zmax = v.pos.z;
+                    if(p.y < b.ymin)
+                        b.ymin = p.y;
 
-                    if(v.pos.z < b.zmin)
-                        b.zmin = v.pos.z;
+                    if(p.z > b.zmax)
+                        b.zmax = p.z;
+
+                    if(p.z < b.zmin)
+                        b.zmin = p.z;
 
                 }
                 return b;
@@ -168,6 +180,21 @@ namespace mork {
     template<typename T>
     class MeshHelper {};
 
+    template <> class MeshHelper<vertex_pos2> {
+        public:
+            static Mesh<vertex_pos2> PLANE();
+    };
+ 
+    template <> class MeshHelper<vertex_pos3> {
+        public:
+            static Mesh<vertex_pos3> PLANE();
+    };
+ 
+    template <> class MeshHelper<vertex_pos4> {
+        public:
+            static Mesh<vertex_pos4> PLANE();
+    };
+ 
     template <> class MeshHelper<vertex_pos_norm_uv> {
         public:
             static Mesh<vertex_pos_norm_uv> PLANE();
