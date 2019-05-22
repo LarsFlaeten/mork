@@ -117,4 +117,19 @@ TEST_F(TextureTest, Texture2dMoveAndVector)
 
 }
 
+TEST_F(TextureTest, Texture2dGenerateEmpty)
+{
+    mork::Texture<2> tex1(800, 600, GL_RGBA, false);
+
+    mork::Texture<2> tex2(800, 600, GL_RGBA, true);
+
+    mork::Texture<2> tex3(800, 600, GL_RGB, false);
+
+    mork::Texture<2> tex4(800, 600, GL_RGB, true);
+
+    mork::info_logger("Following error message is expetced and part of test");
+    ASSERT_THROW(mork::Texture<2> tex4(800, 600, GL_DEPTH_STENCIL, true), std::runtime_error);
+
+}
+
 
