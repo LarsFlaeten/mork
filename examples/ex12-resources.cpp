@@ -44,6 +44,13 @@ class TextBox {
                 dirty = true;
             }
         }
+        
+        void setSize(int width, int height) {
+            ortho = mork::mat4f::orthoProjection(width, 0.0f, height, 0.0f, -1.0f, 1.0f);
+            fb.setSize(mork::vec2i(width, height));            
+            dirty = true;
+        }
+
 
         void drawToBuffer(mork::Font& font) {
             if(dirty) {
@@ -80,18 +87,13 @@ public:
                 progs(mork::ResourceFactory<mork::ProgramPool>::getInstance().create(manager,"programPool1")),
                 scene(mork::ResourceFactory<mork::Scene>::getInstance().create(_manager,"scene1")),
                 font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48)),
-                textBox(800, 600),
+                textBox(this->getWidth(), this->getHeight()),
                 fsQuad(mork::MeshHelper<VN>::PLANE()),
                 showNormals(false),
                 showTangents(false),
                 showHelp(false),
                 showlines(false)
     {
-        up = false;
-        down = false;
-        left = false;
-        right = false;
-
         mork::GlfwWindow::waitForVSync(false);
     }
 
@@ -153,47 +155,6 @@ public:
         double timeValue = timer.getTime();
      
         // Update sceme:
-        // Adjust camera:
-        auto& camera = scene.getCamera();
-        if( up || down || left || right ) {
-            mork::vec3d axis = mork::vec3d::ZERO;
-            double angle = 0.0;
-            if( up || down)
-                axis = mork::vec3d(1,0,0);
-            if( right || left)
-                axis = mork::vec3d(0,1,0);
-            if( up || left)
-                angle = 30.0;
-            if( down || right)
-                angle = -30.0;
-            mork::mat3d mat = camera.getRotation();
-            axis = mat*axis; // Transform axis to global
-            camera.setRotation(mork::quatd(axis, radians(angle*this->getDt())).toMat4().mat3x3()*mat);
-        }
-
-        if(keys.count('W')) {
-            // Move camera foward 2.0 units / s
-            mork::vec3d pos = camera.getPosition();
-            pos += camera.getWorldForward()*this->getDt()*2.0;
-            camera.setPosition(pos);
-        } else if(keys.count('S')) {
-            // Move camera backwards 2.0 units / s
-            mork::vec3d pos = camera.getPosition();
-            pos -= camera.getWorldForward()*this->getDt()*2.0;
-            camera.setPosition(pos);
-        } else if(keys.count('A')) {
-            // Move camera left 2.0 units / s
-            mork::vec3d pos = camera.getPosition();
-            pos -= camera.getWorldRight()*this->getDt()*2.0;
-            camera.setPosition(pos);
-        } else if(keys.count('D')) {
-            // Move camera right 2.0 units / s
-            mork::vec3d pos = camera.getPosition();
-            pos += camera.getWorldRight()*this->getDt()*2.0;
-            camera.setPosition(pos);
-        }
- 
-        
         scene.update();
     
         // Prepare rendering
@@ -248,13 +209,16 @@ public:
             glDisable(GL_BLEND);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-           
+          
+             
             mork::mat4f ortho = mork::mat4f::orthoProjection(this->getWidth(), 0.0f, this->getHeight(), 0.0f, -1.0f, 1.0f);
 
             std::stringstream info;
             info << "Multiline text:\n";
             info << "FPS: " << this->getFps() << ", frametime: " << this->getFrameTime() << "s\n";
-            info << "Cam dir: " << camera.getWorldForward() << ", up: " << camera.getWorldUp() << ", pos: " << camera.getPosition() << "\n";
+            auto& camera = scene.getCamera();
+            info << "Cam dir: " << camera.getWorldForward() << ", up: " << camera.getWorldUp() << ", world pos: " << camera.getWorldPosition() << ", local pos: " << camera.getPosition() << "\nCamera Mode: " << (camera.getMode() == mork::Camera::Mode::FREE ? "FREE" : "ORBIT")  <<"\n";
+            info << "Moon pos: " << scene.getRoot().getChild("moon1").getLocalToWorld().translation() << "\n";
             info << "Key menu:\n";
             info << "\tPress [H] to toggle this text (on = " << showHelp << ")\n";
             info << "\tPress [N] to toggle normals (on = " << showNormals << ")\n";
@@ -291,6 +255,9 @@ public:
         GlfwWindow::reshape(x, y);
 
         scene.getCamera().setAspectRatio(static_cast<double>(x), static_cast<double>(y));
+            
+        //textBox.setSize(x, y);
+        
         idle(false);
     }
 
@@ -302,35 +269,7 @@ public:
                 shouldClose();             
                 handled =  true;
                 break;
-            case mork::EventHandler::key::KEY_UP:
-                up = true;
-                down = false;
-                left = false;
-                right = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_DOWN:
-                up = false;
-                down = true;
-                left = false;
-                right = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_RIGHT:
-                up = false;
-                down = false;
-                left = false;
-                right = true;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_LEFT:
-                up = false;
-                down = false;
-                left = true;
-                right = false;
-                handled =  true;
-                break;
-            default:
+           default:
                 break;
         }
         return false;
@@ -344,23 +283,7 @@ public:
                 shouldClose();             
                 handled =  true;
                 break;
-            case mork::EventHandler::key::KEY_UP:
-                up = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_DOWN:
-                down = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_RIGHT:
-                right = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_LEFT:
-                left = false;
-                handled =  true;
-                break;
-            case mork::EventHandler::key::KEY_F5:
+           case mork::EventHandler::key::KEY_F5:
                 reloadResources();
                 handled = true;
                 break;
@@ -410,14 +333,46 @@ public:
         return true;
     }
 
+    virtual bool mouseClick(button b, state s, modifier m, int x, int y) {
+        previous_mouse_x = x;
+        previous_mouse_y = y;
+    }
+
+    // While button is clicked
     virtual bool mouseMotion(int x, int y) {
-        return false;
+   	    constexpr double kScale = 500.0;
+        mork::Camera& cam = scene.getCamera();
+        double az_rad = cam.getAzimuth();
+        double el_rad = cam.getElevation();
+
+
+  	    el_rad -= (previous_mouse_y - y) / kScale;
+    	az_rad += (previous_mouse_x - x) / kScale;
+
+        cam.setAzimuth(az_rad);
+        cam.setElevation(el_rad);
+  		
+  		previous_mouse_x = x;
+  		previous_mouse_y = y;
+        return true;
     }
 
     virtual bool mousePassiveMotion(int x, int y) {
 
         return false;
     }
+    
+    virtual bool mouseWheel(wheel b, modifier m, int x, int y) {
+        mork::Camera& cam = scene.getCamera();
+        double distance = cam.getDistance(); 
+        if (b==mork::EventHandler::WHEEL_UP ) {
+            distance *= 1.05;
+        } else {
+            distance /= 1.05;
+        }
+        cam.setDistance(distance);
+    }
+
 
     virtual void fpsUpdatedEvent() {
         std::stringstream os;
@@ -426,11 +381,13 @@ public:
 
     }
 private:
-    bool up, down, left, right;
     bool showNormals;
     bool showlines;
     bool showTangents;
     bool showHelp;
+    
+    int previous_mouse_x;
+    int previous_mouse_y;
  
     mork::ResourceManager& manager;
 
