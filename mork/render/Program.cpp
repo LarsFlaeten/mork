@@ -10,8 +10,195 @@
 
 namespace mork {
 
+    Shader::Shader(int version, const std::string& src, Shader::Type type, const std::string& define = "") :
+        _id(0), _type(type) 
+    {
+        if(src.empty()) {
+            warn_logger("Empty source given to Shader constructor");
+            return;
+        }
+
+        std::stringstream s;
+        s << "#version " << version << " core\n";
+        if(!define.empty())
+            s << "#define " << define << "\n";
+        s << src;
+
+        buildShader(s.str());
+    }
+
+    Shader::~Shader() {
+        if(GlfwWindow::isContextActive())
+        {
+            if(_id) {
+                glDeleteShader(_id);
+                _id = 0;
+            }
+        }   
+    }
+ 
+    Shader::Shader(Shader&& o) noexcept {
+        _id = o._id;
+        _type = o._type;
+        o._id = 0;
+    }
+     
+       
+    Shader& Shader::operator=(Shader&& o) noexcept {
+        if(GlfwWindow::isContextActive())
+        {
+            if(_id)
+                glDeleteShader(_id);
+        }   
+        _id = o._id;
+        _type = o._type;
+        o._id = 0;
+        return *this;
+    }
+    
+    std::string   printLineNos(const std::string& s) {
+        std::stringstream ss(s);
+        std::stringstream  out;
+        std::string line;
+        int i = 0;
+
+
+        while(std::getline(ss, line)) {
+            // Line no;
+            ++i;        
+            out << i << ": " << line << "\n";
+        } 
+
+        return out.str();
+    }
+
+    Shader::Type Shader::getType() const {
+        return _type;
+    }
+ 
+    int Shader::getId() const {
+        return _id;
+    }
+ 
+    void Shader::buildShader(const std::string& src) {
+        if(!GlfwWindow::isContextActive()) {
+            error_logger("No context available when building shader, returning..");
+            return;
+        }
+        if(_id!=0) {
+            glDeleteShader(_id);
+            _id = 0;
+        }
+
+        auto s = preProcess(src);
+        
+        const char* c_s = s.c_str();
+
+        // build and compile our shader program
+        // ------------------------------------
+        try {
+            switch(_type) {
+                case(VERTEX):
+                    mork::debug_logger("Compiling vertex shader");
+                    _id = glCreateShader(GL_VERTEX_SHADER);
+                    break;
+                case(FRAGMENT):
+                    mork::debug_logger("Compiling fragment shader");
+                    _id = glCreateShader(GL_FRAGMENT_SHADER);
+                    break;
+                case(GEOMETRY):
+                    mork::debug_logger("Compiling geometry shader");
+                    _id = glCreateShader(GL_GEOMETRY_SHADER);
+                    break;
+                default:
+                    throw std::runtime_error("Not implemented");
+            }
+            glShaderSource(_id, 1, &c_s, NULL);
+            glCompileShader(_id);
+        } catch (std::runtime_error& e) {
+            std::string dump(c_s);
+            error_logger(e.what());
+            error_logger(printLineNos(dump));
+            throw e;
+        }
+        // check for shader compile errors
+        int success;
+        char infoLog[512];
+        glGetShaderiv(_id, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(_id, 512, NULL, infoLog);
+            mork::error_logger("SHADER COMPILATION FAILED: ", infoLog); 
+            mork::error_logger(s);
+            throw std::runtime_error(infoLog);
+        }
+    }
+
+
+
+    std::string   Shader::preProcess(const std::string& s) {
+        std::stringstream ss(s);
+
+        std::string line;
+        std::string processed;
+        int i = 0;
+
+
+        while(std::getline(ss, line)) {
+            // Line no;
+            ++i;        
+            
+            if(line.find("#include") != std::string::npos) {
+                std::string include = line.substr(8, line.length());
+
+                // Remove hyphens and whitespace
+                include.erase(std::remove(include.begin(), include.end(), ' '), include.end());
+                include.erase(std::remove(include.begin(), include.end(), '\"'), include.end());
+                mork::debug_logger("Ecountered include statement, including file: [", include, "]");
+                std::ifstream ifs(include);
+                if(!ifs.is_open()) {
+                    mork::error_logger("Could not open file \"", include, "\".");
+                    throw std::runtime_error("Error preprocessing shader");
+
+                }
+                std::string include_str;
+                std::string iline;
+                int j = 0;
+                while(std::getline(ifs, iline)) {
+                   ++j;
+                   include_str.append(iline); 
+                   include_str.append("\n");
+                }
+                mork::debug_logger("Read ", j, " lines: ");
+                //mork::debug_logger(include_str);
+
+                // trim last endline, since it will be reappended when adde to outer
+                if(include_str[include_str.length()-1] == '\n')
+                    include_str = include_str.substr(0, include_str.length()-1);
+
+                // Recursively preprocess the included shader
+                preProcess(include_str);
+
+                // replace the include statement with the actual included file:
+                line = include_str;
+            }
+
+            processed.append(line);
+            processed.append("\n");
+        }
+
+        return processed;
+    }
+
+    Program::Program() 
+        : _programID(0)
+    {
+
+    }
+
+
 Program::Program(int version, const std::string& src_path)
-    : _programID(0), _vs(0), _fs(0), _gs(0)
+    : _programID(0)
 {
     std::ifstream t(src_path);
     if(t.fail()) {
@@ -31,41 +218,39 @@ Program::Program(int version, const std::string& src_path)
 
     }
 
-    std::stringstream vs;
-    vs << "#version " << version << " core\n";
-    vs << "#define _VERTEX_\n";
-    vs << src;
 
-    std::stringstream fs;
-    fs << "#version " << version << " core\n";
-    fs << "#define _FRAGMENT_\n";
-    fs << src;
+    Shader vs(version, src, Shader::Type::VERTEX, "_VERTEX_");
+    Shader fs(version, src, Shader::Type::FRAGMENT, "_FRAGMENT_");
 
     if(src.find("_GEOMETRY_") != std::string::npos) {
-        std::stringstream gs;
-        gs << "#version " << version << " core\n";
-        gs << "#define _GEOMETRY_\n";
-        gs << src;
-
-        buildShaders(vs.str(), fs.str(), gs.str());
-    } else {
-        buildShaders(vs.str(), fs.str());
-    }
+        Shader gs(version, src, Shader::Type::GEOMETRY, "_GEOMETRY_");
+        buildProgram({vs, gs, fs});
+    } else
+        buildProgram({vs, fs});
 
     
 
 }
 
 Program::Program(const std::string& vssrc, const std::string& fssrc)
- : _programID(0), _vs(0), _fs(0), _gs(0)
+ : Program(vssrc, "", fssrc)
 {
-    buildShaders(vssrc, fssrc);
+
 }
 
 Program::Program(const std::string& vssrc, const std::string& gssrc, const std::string& fssrc)
- : _programID(0), _vs(0), _fs(0), _gs(0)
+ : _programID(0)
 {
-    buildShaders(vssrc, fssrc, gssrc);
+    std::vector<std::reference_wrapper<Shader> > shaders;
+
+    Shader vs(330, vssrc, Shader::Type::VERTEX);
+    Shader fs(330, fssrc, Shader::Type::FRAGMENT);
+    if(!gssrc.empty()) {
+        Shader gs(330, gssrc, Shader::Type::GEOMETRY);
+        buildProgram({vs, gs, fs});
+    } else
+        buildProgram({vs, fs});
+
 }
 
 
@@ -80,7 +265,7 @@ Program::~Program()
     }   
 }
 
-Program::Program(Program&& o) {
+Program::Program(Program&& o) noexcept {
     _programID = o._programID;
     o._programID = 0;
 
@@ -88,7 +273,7 @@ Program::Program(Program&& o) {
 
 }
 
-Program& Program::operator=(Program&& o) {
+Program& Program::operator=(Program&& o) noexcept {
     if(GlfwWindow::isContextActive())
     {
         if(_programID)
@@ -100,216 +285,33 @@ Program& Program::operator=(Program&& o) {
 
     uniforms = std::move(o.uniforms);
 
-
-}
-
-std::string   printLineNos(const std::string& s) {
-    std::stringstream ss(s);
-    std::stringstream  out;
-    std::string line;
-    int i = 0;
-
-
-    while(std::getline(ss, line)) {
-        // Line no;
-        ++i;        
-        out << i << ": " << line << "\n";
-    } 
-
-    return out.str();
-
-}
-
-std::string   Program::preProcessShader(const std::string& s) {
-    std::stringstream ss(s);
-
-    std::string line;
-    std::string processed;
-    int i = 0;
-
-
-    while(std::getline(ss, line)) {
-        // Line no;
-        ++i;        
-        
-        if(line.find("#include") != std::string::npos) {
-            std::string include = line.substr(8, line.length());
-
-            // Remove hyphens and whitespace
-            include.erase(std::remove(include.begin(), include.end(), ' '), include.end());
-            include.erase(std::remove(include.begin(), include.end(), '\"'), include.end());
-            mork::debug_logger("Ecountered include statement, including file: [", include, "]");
-            std::ifstream ifs(include);
-            if(!ifs.is_open()) {
-                mork::error_logger("Could not open file \"", include, "\".");
-                throw std::runtime_error("Error preprocessing shader");
-
-            }
-            std::string include_str;
-            std::string iline;
-            int j = 0;
-            while(std::getline(ifs, iline)) {
-               ++j;
-               include_str.append(iline); 
-               include_str.append("\n");
-            }
-            mork::debug_logger("Read ", j, " lines: ");
-            //mork::debug_logger(include_str);
-
-            // trim last endline, since it will be reappended when adde to outer
-            if(include_str[include_str.length()-1] == '\n')
-                include_str = include_str.substr(0, include_str.length()-1);
-
-            // Recursively preprocess the included shader
-            preProcessShader(include_str);
-
-            // replace the include statement with the actual included file:
-            line = include_str;
-        
-        
-        }
-
-        processed.append(line);
-        processed.append("\n");
-    }
-
-
-    // Check the complete shader:
-    // #version should be on first line
-    // No version directives later
-    /*
-        if(i==1 && line.find("#version") != 0){
-            mork::warn_logger("Version preprocessor directive not in first line og GLSL, adding");
-            processed.append("#version 330 core\n");
-        }
-*/
-
-    return processed;
+    return *this;
 }
 
 
-
-void Program::buildShaders(const std::string& vssrc, const std::string& fssrc, const std::string& gssrc) {
+void    Program::buildProgram(const std::vector<std::reference_wrapper<Shader> >& shaders) {
     // This will delete the program if it allready exist, and detach shaders
-    // (Thease are allready marked for deletion and will be freed)
+    // (Those allready marked for deletion and will be freed)
     if(_programID!=0) {
         glDeleteProgram(_programID);
         _programID = 0;
-        _fs = 0;
-        _vs = 0;
-        _gs = 0;
     }
-   
-    std::string vs_proc = preProcessShader(vssrc);
-    std::string fs_proc = preProcessShader(fssrc);
-    std::string gs_proc;
-
-    // Conditional preprocessing of geometry shader
-    bool gs = false;
-    if(gssrc.compare("") != 0) {
-        gs_proc = preProcessShader(gssrc);
-        gs = true;
-    }
-
-    const char* c_vs = vs_proc.c_str();
-    const char* c_fs = fs_proc.c_str();
-    const char* c_gs = gs_proc.c_str();
-
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
-    mork::debug_logger("Compiling vertex shader");
-    try {
-        _vs = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(_vs, 1, &c_vs, NULL);
-        glCompileShader(_vs);
-    } catch (std::runtime_error& e) {
-        std::string dump(c_vs);
-        error_logger(e.what());
-        error_logger(printLineNos(dump));
-        throw e;
-    }
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(_vs, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(_vs, 512, NULL, infoLog);
-        mork::error_logger("SHADER::VERTEX::COMPILATION_FAILED: ", infoLog); 
-        mork::error_logger(vs_proc);
-        throw std::runtime_error(infoLog);
-    }
-    // fragment shader
-    mork::debug_logger("Compiling fragment shader");
-    try {
-        _fs = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(_fs, 1, &c_fs, NULL);
-        glCompileShader(_fs);
-    } catch (std::runtime_error& e) {
-        std::string dump(c_fs);
-        error_logger(e.what());
-        error_logger(printLineNos(dump));
-        throw e;
-    }
-    
-    // check for shader compile errors
-    glGetShaderiv(_fs, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(_fs, 512, NULL, infoLog);
-        mork::error_logger("SHADER::FRAGMENT::COMPILATION_FAILED: ", infoLog);
-        mork::error_logger(fs_proc);
-        throw std::runtime_error(infoLog);
-    }
-
-    // Geometry shader
-    if(!gs) {
-        mork::debug_logger("No geometry shader present");
-    } else { 
-        mork::debug_logger("Compiling geometry shader");
-        try {
-            _gs = glCreateShader(GL_GEOMETRY_SHADER);
-            glShaderSource(_gs, 1, &c_gs, NULL);
-            glCompileShader(_gs);
-        } catch (std::runtime_error& e) {
-            std::string dump(c_gs);
-            error_logger(e.what());
-            error_logger(printLineNos(dump));
-            throw e;
-        }
-        // check for shader compile errors
-        int success;
-        char infoLog[512];
-        glGetShaderiv(_vs, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
-            glGetShaderInfoLog(_vs, 512, NULL, infoLog);
-            mork::error_logger("SHADER::GEOMETRY::COMPILATION_FAILED: ", infoLog); 
-            mork::error_logger(vs_proc);
-            throw std::runtime_error(infoLog);
-        }
-    }
-    
-    // link shaders
+     
+    // Create program and attach shaders
     _programID = glCreateProgram();
-    glAttachShader(_programID, _vs);
-    glAttachShader(_programID, _fs);
-    if(gs)
-        glAttachShader(_programID, _gs);
+    for(auto& sh : shaders)
+        glAttachShader(_programID, sh.get().getId());
 
     glLinkProgram(_programID);
     // check for linking errors
+    int success;
+    char infoLog[512];
     glGetProgramiv(_programID, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(_programID, 512, NULL, infoLog);
         mork::error_logger("SHADER::PROGRAM::LINKING_FAILED: ", infoLog);
         throw std::runtime_error(infoLog);
     }
-    glDeleteShader(_vs);
-    glDeleteShader(_fs);
-    if(gs)
-        glDeleteShader(_gs);
 
     // Establish active non-block uniforms in the program
     uniforms.clear();
@@ -338,8 +340,6 @@ void Program::buildShaders(const std::string& vssrc, const std::string& fssrc, c
         mork::info_logger("Name: \"", name, "\", type: ", type, ", location: ", location);
         uniforms.insert({name, Uniform(type, location)});
     }
-
-
 }
 
 void    Program::use() const
@@ -350,7 +350,7 @@ void    Program::use() const
  
 }
 
-int Program::getProgramID() const
+int Program::getProgramId() const
 {
     return _programID;
 }
@@ -373,6 +373,20 @@ bool Program::queryUniform(const std::string& name) const {
     
     return true;
 }
+
+bool Program::bindTexture(const TextureBase& tex, const std::string& name, int texUnit) const {
+    const Uniform& u = this->getUniform(name);
+    auto type = u.getType();
+    if(type!=GL_SAMPLER_3D && type!=GL_SAMPLER_2D && type != GL_SAMPLER_CUBE) {
+        error_logger("Program::BindTexture() can only be used on uniforms of texture type. Requested uniform was \"", name, "\" of type ", type);
+        throw std::runtime_error(error_logger.last());
+    }   
+
+    u.set(texUnit);
+    tex.bind(texUnit);
+}
+
+
 
 inline json programSchema = R"(
     {

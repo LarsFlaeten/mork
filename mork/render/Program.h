@@ -2,17 +2,52 @@
 #define _MORK_PROGRAM_H_
 
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 #include "mork/render/Uniform.h"
+#include "mork/render/Texture.h"
 
 namespace mork {
 
-// Represents a compiled set of shaders linked as a OpenGL program
+// An opengl shader object
+class Shader {
+
+    public:
+        enum Type {
+            VERTEX,
+            FRAGMENT,
+            GEOMETRY
+        };   
+    public:
+        Shader(int version, const std::string& src, Type type, const std::string& define);  
+        ~Shader();
+        // Prevent copying
+        Shader(Shader& o) = delete;
+        Shader& operator=(Shader& o) = delete;
+        // allow move
+        Shader(Shader&& o) noexcept;
+        Shader& operator=(Shader&& o) noexcept;
+
+        void buildShader(const std::string& src);
+        static std::string preProcess(const std::string& src);
+
+        Type getType() const;
+        int  getId() const;
+    private:
+        int _id;
+        Type _type;
+};
+    
+    
+    
+    // Represents a compiled set of shaders linked as a OpenGL program
 
 class Program {
 
 public:
+    // creates an empty program. Must be linked with buildProgram before use
+    Program();
 
     // Build a shader program from a combined shader source file
     // (Using directives such as #ifdef _VERTEX_, GEOMETRY_, _FRAGMENT_)
@@ -23,10 +58,10 @@ public:
     
     ~Program();
 
-    Program(Program&& o);
-    Program& operator=(Program&& o);
+    Program(Program&& o) noexcept;
+    Program& operator=(Program&& o) noexcept;
 
-    void buildShaders(const std::string& vssrc, const std::string& fssrc, const std::string& gssrc = "");
+    void buildProgram(const std::vector<std::reference_wrapper<Shader> >& shaders);
  
     // TODO: remove and move use program to frambuffer?
     void    use() const;
@@ -39,16 +74,14 @@ public:
     bool queryUniform(const std::string& name) const;
     
     //protected:
-    int getProgramID() const;
+    int getProgramId() const;
 
-    static std::string   preProcessShader(const std::string& s);
+    // Binds a texture to the given name and texture unit in the shader
+    bool bindTexture(const TextureBase& tex, const std::string& name, int texUnit) const;
 
 private:
 
     int _programID;
-    int _vs;
-    int _fs;
-    int _gs;
 
     std::unordered_map<std::string, Uniform> uniforms;
 
