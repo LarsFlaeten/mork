@@ -19,14 +19,14 @@
 
 using namespace std;
 
-const char *vertexShaderSource = "#version 330 core\n"
+const char *vertexShaderSource = 
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
 
-const char *fragmentShaderSource = "#version 330 core\n"
+const char *fragmentShaderSource = 
     "out vec4 FragColor;\n"
     "uniform vec4 ourColor;\n"
     "void main()\n"
@@ -34,7 +34,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "   FragColor = ourColor;\n"
     "}\n\0";
 
-const char *vertexShaderSource2 = "#version 330 core\n"
+const char *vertexShaderSource2 = 
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec4 aCol;\n"
     "out vec4 color;"
@@ -44,7 +44,7 @@ const char *vertexShaderSource2 = "#version 330 core\n"
     "   color = aCol;\n"
     "}\0";
 
-const char *fragmentShaderSource2 = "#version 330 core\n"
+const char *fragmentShaderSource2 = 
     "out vec4 FragColor;\n"
     "in vec4 color;\n"
     "void main()\n"
@@ -52,7 +52,7 @@ const char *fragmentShaderSource2 = "#version 330 core\n"
     "   FragColor = color;\n"
     "}\n\0";
 
-const char *vertexShaderSource3 = "#version 330 core\n"
+const char *vertexShaderSource3 = 
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec4 aCol;\n"
     "layout (location = 2) in vec2 aUV;\n"
@@ -65,7 +65,7 @@ const char *vertexShaderSource3 = "#version 330 core\n"
     "   texCoord = aUV;\n"
     "}\0";
 
-const char *fragmentShaderSource3 = "#version 330 core\n"
+const char *fragmentShaderSource3 = 
     "out vec4 FragColor;\n"
     "in vec4 color;\n"
     "in vec2 texCoord;\n"
@@ -77,7 +77,7 @@ const char *fragmentShaderSource3 = "#version 330 core\n"
     "   FragColor = color*texture(ourTexture, texCoord);\n"
     "}\n\0";
 
-const char *vertexShaderSource4 = "#version 330 core\n"
+const char *vertexShaderSource4 = 
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec2 aUV;\n"
     "out vec2 texCoord;\n" 
@@ -87,7 +87,7 @@ const char *vertexShaderSource4 = "#version 330 core\n"
     "   texCoord = aUV;\n"
     "}\0";
 
-const char *fragmentShaderSource4 = "#version 330 core\n"
+const char *fragmentShaderSource4 = 
     "out vec4 FragColor;\n"
     "in vec2 texCoord;\n"
     "\n"
@@ -117,7 +117,7 @@ public:
        // set up vertex data (and buffer(s)) and configure vertex attributes
         // ------------------------------------------------------------------
         //std::vectpr<int>
-        std::vector<mork::vertex_pos> vertices = {
+        std::vector<mork::vertex_pos3> vertices = {
             mork::vec3f(0.0f,  0.5f, 0.0f),  // top right
             mork::vec3f(0.0f, -0.5f, 0.0f),  // bottom right
             mork::vec3f(-0.75f, -0.5f, 0.0f),  // bottom left
@@ -283,7 +283,7 @@ public:
 private:
     mork::Timer timer;
     
-    mork::VertexBuffer<mork::vertex_pos> vb;
+    mork::VertexBuffer<mork::vertex_pos3> vb;
     mork::VertexBuffer<mork::vertex_pos_col> vb2;
     mork::VertexBuffer<mork::vertex_pos_col_uv> vb3;
     mork::VertexBuffer<mork::vertex_pos_uv> vb4;
