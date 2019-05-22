@@ -21,6 +21,7 @@ namespace mork {
         public:
             Uniform(int type, int uniformLocation);
 
+            void set(const vec2f& v) const;
             void set(const vec3f& v) const;
             void set(const vec4f& v) const;
             void set(const int& i) const;
@@ -28,11 +29,26 @@ namespace mork {
             void set(const mat4f& m) const;
             void set(const mat3f& m) const;
             void set(const float& f) const;
+            
+            // Implicit cast to float:
+            void set(const double& f) const;
+
+
+            int getType() const;
         private:
             int type;
             int u_loc;
 
 
+    };
+
+
+    template<> class UniformHandler<mork::vec2f>
+    {
+        public:
+            inline static void set(const mork::vec2f& v, int u_loc) {
+                glUniform2fv(u_loc, 1, &v.x);
+            }
     };
 
 

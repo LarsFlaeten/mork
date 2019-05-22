@@ -6,6 +6,18 @@ namespace mork {
         
     }
 
+    int Uniform::getType() const {
+        return type;
+    }
+
+    void Uniform::set(const mork::vec2f& v) const {
+        if(type!=GL_FLOAT_VEC2) {
+            mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT_VEC2, "(GL_FOAT_VEC3)");
+            throw std::runtime_error("Tried setting vec3f on Uniform with different type");
+        }
+        UniformHandler<mork::vec2f>::set(v, u_loc);
+    }
+ 
     void Uniform::set(const mork::vec3f& v) const {
         if(type!=GL_FLOAT_VEC3) {
             mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT_VEC3, "(GL_FOAT_VEC3)");
@@ -21,7 +33,7 @@ namespace mork {
         UniformHandler<mork::vec4f>::set(v, u_loc);
     }
     void Uniform::set(const int& i) const {
-        if(type!=GL_INT && type!=GL_SAMPLER_2D && type != GL_SAMPLER_CUBE) {
+        if(type!=GL_INT && type!=GL_SAMPLER_3D && type!=GL_SAMPLER_2D && type != GL_SAMPLER_CUBE) {
             mork::error_logger("Type of the Uniform was: ", type, ", but instance of template allows ", GL_INT, ", ", GL_SAMPLER_2D );
             throw std::runtime_error("Tried setting int on Uniform with different type");
         
@@ -63,6 +75,13 @@ namespace mork {
             throw std::runtime_error("Tried setting float on Uniform with different type");
         }
         UniformHandler<float>::set(f, u_loc);
+    }
+    void Uniform::set(const double& d) const {
+        if(type!=GL_FLOAT) {
+            mork::error_logger("Type was: ", type, ", tried setting: ", GL_FLOAT, "(GL_FOAT)");
+            throw std::runtime_error("Tried setting float on Uniform with different type");
+        }
+        UniformHandler<float>::set(static_cast<float>(d), u_loc);
     }
  
 }
