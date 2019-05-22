@@ -27,17 +27,40 @@ class DynamicVertexBuffer : public GPUBuffer<vertex, GL_ARRAY_BUFFER, GL_DYNAMIC
 
 };
 
+struct vertex_pos2 {
+    mork::vec2f   pos;
 
-struct vertex_pos {
+    vertex_pos2(const mork::vec2f& p) {pos = p;};
+
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+};
+
+
+struct vertex_pos3 {
     mork::vec3f   pos;
 
-    vertex_pos(const mork::vec3f& p) {pos = p;};
+    vertex_pos3(const mork::vec3f& p) {pos = p;};
 
     inline static void setAttributes() {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
     }
 };
+
+struct vertex_pos4 {
+    mork::vec4f   pos;
+
+    vertex_pos4(const mork::vec4f& p) {pos = p;};
+
+    inline static void setAttributes() {
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+    }
+};
+
 
 struct vertex_pos_uv {
     mork::vec3f   pos;
