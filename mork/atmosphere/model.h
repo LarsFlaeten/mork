@@ -149,11 +149,16 @@ parameter):
 #ifndef ATMOSPHERE_MODEL_H_
 #define ATMOSPHERE_MODEL_H_
 
-#include <glad/glad.h>
+#include <mork/glad/glad.h>
+#include <mork/render/Program.h>
+#include <mork/render/Texture.h>
+#include <mork/render/Mesh.h>
 #include <array>
 #include <functional>
 #include <string>
 #include <vector>
+
+using namespace mork;
 
 namespace atmosphere {
 
@@ -284,10 +289,10 @@ class Model {
 
   void Init(unsigned int num_scattering_orders = 4);
 
-  GLuint shader() const { return atmosphere_shader_; }
+  mork::Shader& shader() { return *atmosphere_shader_; }
 
   void SetProgramUniforms(
-      GLuint program,
+      mork::Program& program,
       GLuint transmittance_texture_unit,
       GLuint scattering_texture_unit,
       GLuint irradiance_texture_unit,
@@ -308,32 +313,33 @@ class Model {
   static constexpr double kLambdaB = 440.0;
 
  private:
-  typedef std::array<double, 3> vec3;
-  typedef std::array<float, 9> mat3;
+
+  //typedef std::array<double, 3> vec3;
+  //typedef std::array<float, 9> mat3;
 
   void Precompute(
       GLuint fbo,
-      GLuint delta_irradiance_texture,
-      GLuint delta_rayleigh_scattering_texture,
-      GLuint delta_mie_scattering_texture,
-      GLuint delta_scattering_density_texture,
-      GLuint delta_multiple_scattering_texture,
-      const vec3& lambdas,
-      const mat3& luminance_from_radiance,
+      Texture<2>& delta_irradiance_texture,
+      Texture<3>& delta_rayleigh_scattering_texture,
+      Texture<3>& delta_mie_scattering_texture,
+      Texture<3>& delta_scattering_density_texture,
+      Texture<3>& delta_multiple_scattering_texture,
+      const mork::vec3d& lambdas,
+      const mork::mat3f& luminance_from_radiance,
       bool blend,
       unsigned int num_scattering_orders);
 
   unsigned int num_precomputed_wavelengths_;
   bool half_precision_;
   bool rgb_format_supported_;
-  std::function<std::string(const vec3&)> glsl_header_factory_;
-  GLuint transmittance_texture_;
-  GLuint scattering_texture_;
-  GLuint optional_single_mie_scattering_texture_;
-  GLuint irradiance_texture_;
-  GLuint atmosphere_shader_;
-  GLuint full_screen_quad_vao_;
-  GLuint full_screen_quad_vbo_;
+  std::function<std::string(const mork::vec3d&)> glsl_header_factory_;
+  mork::Texture<2> transmittance_texture_;
+  mork::Texture<3> scattering_texture_;
+  std::optional<mork::Texture<3>> optional_single_mie_scattering_texture_;
+  mork::Texture<2> irradiance_texture_;
+  std::unique_ptr<mork::Shader> atmosphere_shader_;
+  mork::Mesh<mork::vertex_pos2>  fsQuad;
+
 };
 
 }  // namespace atmosphere
