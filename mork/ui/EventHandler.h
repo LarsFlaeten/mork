@@ -255,7 +255,7 @@ public:
     virtual bool mouseWheel(wheel b, modifier m, int x, int y);
 
     /**
-     * This method is called periodically when the mouse is moved. Note that the
+     * This method is called periodically when the mouse is moved while a button is clicked. Note that the
      * mouse coordinates are relative to the topleft corner of the window, with
      * positive y towards the bottom.
      *
