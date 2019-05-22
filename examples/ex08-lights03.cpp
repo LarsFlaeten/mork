@@ -20,7 +20,7 @@ using namespace std;
 
 static std::string window_title = "Lights 03";
 
-const char *vertexShaderSource = "#version 330 core\n"
+const char *vertexShaderSource = 
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec3 aNorm;\n"
     "layout (location = 2) in vec2 aUv;\n"
@@ -39,7 +39,7 @@ const char *vertexShaderSource = "#version 330 core\n"
     "   normal = normalMat * aNorm;\n"
     "}\0";
 
-const char *fragmentShaderSource = "#version 330 core\n"
+const char *fragmentShaderSource = 
     "#include \"shaders/materials.glhl\"\n"
     "#include \"shaders/lights.glhl\"\n"
     "out vec4 FragColor;\n"
@@ -74,7 +74,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "   FragColor = vec4((total), 1.0);\n"
    "}\n\0";
 
-const char *fragmentShaderSource2 = "#version 330 core\n"
+const char *fragmentShaderSource2 = 
     "out vec4 FragColor;\n"
     "in vec2 texCoord;\n"
     "in vec3 fragPos;\n"

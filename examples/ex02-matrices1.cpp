@@ -19,7 +19,7 @@
 
 using namespace std;
 
-const char *vertexShaderSource = "#version 330 core\n"
+const char *vertexShaderSource = 
     "layout (location = 0) in vec3 aPos;\n"
     "layout (location = 1) in vec2 aUV;\n"
     "out vec2 texCoord;\n"
@@ -30,7 +30,7 @@ const char *vertexShaderSource = "#version 330 core\n"
     "   texCoord = aUV;\n"
     "}\0";
 
-const char *fragmentShaderSource = "#version 330 core\n"
+const char *fragmentShaderSource = 
     "out vec4 FragColor;\n"
     "in vec2 texCoord;\n"
     "\n"
