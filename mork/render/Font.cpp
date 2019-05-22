@@ -8,7 +8,6 @@ namespace mork {
 
     std::string Font::font_vs = 
 R"(
-#version 330 core
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec2 tex;
 out vec2 TexCoords;
@@ -24,7 +23,6 @@ void main()
 
 	std::string Font::font_ps = 
 R"(
-#version 330 core
 in vec2 TexCoords;
 out vec4 color;
 
