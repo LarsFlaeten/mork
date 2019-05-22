@@ -4,7 +4,7 @@
 
 
 namespace mork {
-    const char *vertexShaderSource = "#version 330 core\n"
+    const char *vertexShaderSource = 
         "layout (location = 0) in vec3 aPos;\n"
         "uniform mat4 projection;\n"
         "uniform mat4 view;\n"
@@ -12,7 +12,7 @@ namespace mork {
         "{\n"
         "   gl_Position = projection * view * vec4(aPos, 1.0);\n"
         "}\0";
-    const char *fragmentShaderSource = "#version 330 core\n"
+    const char *fragmentShaderSource =
         "out vec4 FragColor;\n"
         "\n"
         "uniform vec3 color;\n"
@@ -28,19 +28,19 @@ namespace mork {
     
     std::unique_ptr<VertexArrayObject>   BBoxDrawer::vao;
     
-    std::unique_ptr<DynamicVertexBuffer<vertex_pos> > BBoxDrawer::buf;
+    std::unique_ptr<DynamicVertexBuffer<vertex_pos3> > BBoxDrawer::buf;
  
     void BBoxDrawer::drawBox(const box3d& box, const mat4d& projection, const mat4d& view) {
 
         if(!initialized) {
             vao = std::make_unique<VertexArrayObject>();
-            buf = std::make_unique<DynamicVertexBuffer<vertex_pos> >(); 
+            buf = std::make_unique<DynamicVertexBuffer<vertex_pos3> >(); 
             prog = std::make_unique<Program>(vertexShaderSource, fragmentShaderSource);
             vao->bind();
             buf->bind();
             
             buf->setAttributes();
-            buf->setBufferSize(sizeof(vertex_pos)*24);
+            buf->setBufferSize(sizeof(vertex_pos3)*24);
              
             buf->unbind();
             vao->unbind();    
@@ -60,7 +60,7 @@ namespace mork {
         float zp = box.zmax;
         float zm = box.zmin;
 
-        std::vector<vertex_pos> verts = {
+        std::vector<vertex_pos3> verts = {
             // 12 lines in total
             
             vec3f(xp, yp, zp),

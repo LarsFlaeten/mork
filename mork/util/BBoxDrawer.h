@@ -15,7 +15,7 @@ namespace mork {
 
         private:
             static std::unique_ptr<VertexArrayObject>   vao;
-            static std::unique_ptr<DynamicVertexBuffer<vertex_pos> > buf;
+            static std::unique_ptr<DynamicVertexBuffer<vertex_pos3> > buf;
             static std::unique_ptr<Program> prog;
             static bool initialized;
     };
