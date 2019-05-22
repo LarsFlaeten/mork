@@ -132,4 +132,19 @@ TEST_F(TextureTest, Texture2dGenerateEmpty)
 
 }
 
+TEST_F(TextureTest, Texture3dGenerateEmpty)
+{
+    mork::Texture<3> tex1(800, 600, 16, GL_RGBA, false);
+
+    mork::Texture<3> tex2(800, 600, 16, GL_RGBA, true);
+
+    mork::Texture<3> tex3(800, 600, 16, GL_RGB, false);
+
+    mork::Texture<3> tex4(800, 600, 16, GL_RGB, true);
+
+    mork::info_logger("Following error message is expetced and part of test");
+    ASSERT_THROW(mork::Texture<3> tex4(800, 600, 16, GL_DEPTH_STENCIL, true), std::runtime_error);
+
+}
+
 
