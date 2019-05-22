@@ -28,7 +28,7 @@ namespace mork {
 
     template<typename T>
     StaticUniform<T>::StaticUniform(const mork::Program& prog, const std::string& name) {
-        uniform_loc = glGetUniformLocation(prog.getProgramID(), name.c_str());
+        uniform_loc = glGetUniformLocation(prog.getProgramId(), name.c_str());
     }
     
     template<typename T>
