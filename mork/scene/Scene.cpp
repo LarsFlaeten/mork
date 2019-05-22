@@ -133,10 +133,44 @@ namespace mork {
                     
 
 				}
-
+                
+                // TODO: Move all this to camera class?
                 if(js.count("camera")) {
                     auto& cam = scene.getCamera();
                     json camj = js["camera"];
+                    
+                    if(camj.count("reference")) {
+                        auto ref = camj["reference"].get<std::string>();
+                        auto& n = scene.getRoot().getChild(ref);
+                        cam.setReference(n);
+                    }
+
+                    Camera::Mode mode = Camera::Mode::FREE;
+                    if(camj.count("mode")) {
+                        auto ms = camj["mode"].get<std::string>();
+                        if(ms.compare("orbit")==0)
+                            mode = Camera::Mode::ORBIT;
+                    }
+                    cam.setMode(mode);
+
+
+                    if(camj.count("distance")) {
+                        auto d = camj["distance"].get<double>();
+                        cam.setDistance(d);
+                    }
+                     
+                    if(camj.count("azimuth")) {
+                        auto d = camj["azimuth"].get<double>();
+                        cam.setAzimuth(d);
+                    }
+                    
+                    if(camj.count("elevation")) {
+                        auto d = camj["elevation"].get<double>();
+                        cam.setElevation(d);
+                    }
+                    
+                    
+
                     if(camj.count("position"))
                         cam.setPosition(string2vec3d(camj["position"]));
                     if(camj.count("lookAt")) {
@@ -145,6 +179,8 @@ namespace mork {
                         vec3d up = string2vec3d(lookAt["up"]);
                         cam.lookAt(direction, up);
                     }
+                    
+
 
                     double farClip = cam.getFarClippingPlane();
                     double nearClip = cam.getNearClippingPlane();
