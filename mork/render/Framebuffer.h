@@ -10,6 +10,10 @@
 namespace mork {
 
     class Framebuffer : public Bindable {
+		public:
+			static bool isFramebufferRgbFormatSupported(bool half_precision);
+	
+
         public:
             // Creates a new offscreen framebuffer
             // For now we assume a standard framebuffer width a color atachment and

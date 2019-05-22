@@ -9,6 +9,31 @@ namespace mork {
 
     const Framebuffer* Framebuffer::ACTIVE_FRAMEBUFFER = nullptr;
 
+	/*
+	<p>a function to test whether the RGB format is a supported renderbuffer color
+	format (the OpenGL 3.3 Core Profile specification requires support for the RGBA
+	formats, but not for the RGB ones):
+	*/
+
+	bool Framebuffer::isFramebufferRgbFormatSupported(bool half_precision) {
+	  GLuint test_fbo = 0;
+	  glGenFramebuffers(1, &test_fbo);
+	  glBindFramebuffer(GL_FRAMEBUFFER, test_fbo);
+	  GLuint test_texture = 0;
+	  glGenTextures(1, &test_texture);
+	  glBindTexture(GL_TEXTURE_2D, test_texture);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexImage2D(GL_TEXTURE_2D, 0, half_precision ? GL_RGB16F : GL_RGB32F,
+				   1, 1, 0, GL_RGB, GL_FLOAT, NULL);
+	  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+							 GL_TEXTURE_2D, test_texture, 0);
+	  bool rgb_format_supported =
+		  glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+	  glDeleteTextures(1, &test_texture);
+	  glDeleteFramebuffers(1, &test_fbo);
+	  return rgb_format_supported;
+	}
+
     Framebuffer::Framebuffer(bool main)
         : clearColor(vec4f(0.0f, 0.0f, 0.0f, 1.0f)),
         size(vec2i::ZERO) // Size is set later on default framebuffer
@@ -162,16 +187,16 @@ namespace mork {
     }
 
     void Framebuffer::validateProgram(const Program& prog) {
-        glValidateProgram(prog.getProgramID());
+        glValidateProgram(prog.getProgramId());
         GLint status = 0;
-        glGetProgramiv(prog.getProgramID(), GL_VALIDATE_STATUS, &status);
+        glGetProgramiv(prog.getProgramId(), GL_VALIDATE_STATUS, &status);
         if(status != GL_TRUE) {
             GLint maxlength = 0;
-            glGetProgramiv(prog.getProgramID(), GL_INFO_LOG_LENGTH, &maxlength);
-            mork::error_logger("Program validation failed on program ID=", prog.getProgramID());
+            glGetProgramiv(prog.getProgramId(), GL_INFO_LOG_LENGTH, &maxlength);
+            mork::error_logger("Program validation failed on program ID=", prog.getProgramId());
             if(maxlength > 0) {
                 GLchar info[maxlength+1];
-                glGetProgramInfoLog(prog.getProgramID(), maxlength+1, NULL, info);
+                glGetProgramInfoLog(prog.getProgramId(), maxlength+1, NULL, info);
                 std::string loginfo(info);
                 mork::error_logger(loginfo);
             }
