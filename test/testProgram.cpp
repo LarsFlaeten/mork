@@ -47,7 +47,7 @@ TEST_F(ProgramTest, PreprocessShaderTest1)
 {
     std::string test = "#version 330 core\n2\n3\n4";
 
-    std::string string2 = mork::Program::preProcessShader(test);
+    std::string string2 = mork::Shader::preProcess(test);
 
     //count lines:
     std::stringstream ss(string2);
@@ -64,7 +64,7 @@ TEST_F(ProgramTest, PreprocessShaderTest2)
 {
     std::string test = "#version 330 core\n#include \"shaders/lights.glhl\"\n";
 
-    std::string string2 = mork::Program::preProcessShader(test);
+    std::string string2 = mork::Shader::preProcess(test);
 
     //count lines:
     std::stringstream ss(string2);
@@ -80,7 +80,7 @@ TEST_F(ProgramTest, PreprocessShaderTest3)
 {
     std::string test = "#version 330 core\n#include \"NOT_AN_EXISTING_FILE\"\n";
 
-    ASSERT_THROW(std::string string2 = mork::Program::preProcessShader(test),
+    ASSERT_THROW(std::string string2 = mork::Shader::preProcess(test),
             std::runtime_error);
 
 }
@@ -94,7 +94,7 @@ TEST_F(ProgramTest, PreprocessShaderTest4)
 
     std::string test = "#version 330 core\n#include \"/tmp/test_include.glhl\"\nLast Line\n";
 
-    std::string string2 = mork::Program::preProcessShader(test);
+    std::string string2 = mork::Shader::preProcess(test);
 
     //count lines:
     std::stringstream ss(string2);
