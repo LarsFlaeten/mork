@@ -77,6 +77,11 @@ namespace mork {
 
     void ResourceManager::loadResource(const std::string& file) {
         std::ifstream is(file);
+        if(!is.is_open()) {
+            error_logger("File \"", file , "\" not found.");
+            throw std::runtime_error(error_logger.last());
+        }
+
         json j;
         is >> j;
         for(auto el = j.begin(); el != j.end(); ++el) {
