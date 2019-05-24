@@ -90,7 +90,7 @@ TEST_F(FramebufferTest, ClearColor)
 TEST_F(FramebufferTest, RenderBuffer01)
 {
     // Should not throw any exceptions
-    mork::Framebuffer fb(400, 300, true);
+    mork::Framebuffer fb(400, 300);
 
     fb.bind();
 
@@ -136,7 +136,7 @@ TEST_F(FramebufferTest, RenderBuffer01)
 TEST_F(FramebufferTest, RenderBuffer02)
 {
     // Should not throw any exceptions
-    mork::Framebuffer fb(400, 300, false);
+    mork::Framebuffer fb(400, 300);
 
     fb.bind();
 
