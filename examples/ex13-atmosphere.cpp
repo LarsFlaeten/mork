@@ -52,13 +52,15 @@ const char kVertexShader[] = R"(
 class TextBox {
     public:
         TextBox(int width, int height) : 
-            fb(width, height, false), 
+            fb(width, height),
+            colorBuffer(width, height, GL_RGBA, false), 
             dirty(true), 
             text(""),
             ortho(mork::mat4f::orthoProjection(width, 0.0f, height, 0.0f, -1.0f, 1.0f)) 
         {
             // Set background as initially transparent
             fb.setClearColor(mork::vec4f(0.0f, 0.0f, 0.0f, 0.0f));
+            fb.attachColorBuffers({colorBuffer});
         }
         
         void setText(const std::string& _text) {
@@ -79,15 +81,9 @@ class TextBox {
             }
         }
 
-        void draw(mork::Font& font) {
-                auto s = fb.getSize();
-                font.drawText(text, 5, s.y-font.getYMax(18)-5, 18, mork::vec3f(1.0, 1.0, 1.0), ortho);
-                dirty = false;       
-        }
-
 
         const mork::Texture<2>& getColorBuffer() const {
-            return fb.getColorBuffer();
+            return colorBuffer;
         }
 
     private:
@@ -95,7 +91,7 @@ class TextBox {
         std::string text;
         mork::Framebuffer fb;
         mork::mat4f ortho; 
-
+        mork::Texture<2> colorBuffer;
 };
 
 

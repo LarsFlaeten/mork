@@ -162,13 +162,15 @@ const char* fs_skybox =
 class TextBox {
     public:
         TextBox(int width, int height) : 
-            fb(width, height, false), 
+            fb(width, height),
+            colorBuffer(width, height, GL_RGBA, false), 
             dirty(true), 
             text(""),
             ortho(mork::mat4f::orthoProjection(width, 0.0f, height, 0.0f, -1.0f, 1.0f)) 
         {
             // Set background as initially transparent
             fb.setClearColor(mork::vec4f(0.0f, 0.0f, 0.0f, 0.0f));
+            fb.attachColorBuffer(colorBuffer);
         }
         
         void setText(const std::string& _text) {
@@ -190,7 +192,7 @@ class TextBox {
         }
 
         const mork::Texture<2>& getColorBuffer() const {
-            return fb.getColorBuffer();
+            return colorBuffer;
         }
 
     private:
@@ -198,7 +200,7 @@ class TextBox {
         std::string text;
         mork::Framebuffer fb;
         mork::mat4f ortho; 
-
+        mork::Texture<2> colorBuffer;
 };
 
 using VN = mork::vertex_pos_norm_uv;
