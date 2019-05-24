@@ -48,23 +48,13 @@ namespace mork {
         }
     }
 
-    Framebuffer::Framebuffer(int width, int height, bool depthStencil)
+    Framebuffer::Framebuffer(int width, int height)
         : clearColor(vec4f(0.0f, 0.0f, 0.0f, 1.0f)),
            size(vec2i(width, height))
     {
-        
-        colorBuffer = std::make_unique<Texture<2> >();
-            
-        if(depthStencil)
-            depthStencilBuffer = std::make_unique<Texture<2> >();
-                
-        glGenFramebuffers(1, &fbo);
-
-        allocateBuffers();
-
-        attachBuffers();
+        glCreateFramebuffers(1, &fbo);
     }
-
+/*
     void Framebuffer::allocateBuffers() {        
 
         if(colorBuffer->getTextureId()>0) { 
@@ -103,6 +93,46 @@ namespace mork {
         unbind();
 
     }
+*/
+    void Framebuffer::attachColorBuffer(mork::TextureBase& t) {
+        glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0,  t.getTextureId(), 0);
+        glNamedFramebufferDrawBuffer(fbo, GL_COLOR_ATTACHMENT0);
+    }
+
+
+
+    void Framebuffer::attachColorBuffers(std::vector<std::reference_wrapper<mork::TextureBase>> t) {
+        auto s = t.size();
+        GLuint kDrawBuffers[s];
+        for(unsigned int i = 0; i < s; ++i)
+            kDrawBuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+        
+        if(t.size()>max_color_attachments || t.size()< 1)
+        {
+            error_logger("Size of coloBuffer vecotr must be 1-", max_color_attachments, " in current implementation, given vector had ", t.size(), " elements.");
+            throw std::runtime_error(error_logger.last());
+        }
+
+        unsigned int i = 0;
+        for(auto& r : t) {
+            glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0 + (i++), r.get().getTextureId(), 0);
+        }
+
+        glNamedFramebufferDrawBuffers(fbo, t.size(), kDrawBuffers);
+
+    }
+
+    void Framebuffer::clearAttachments() {
+        for(unsigned int i = 0; i < max_color_attachments; ++i)
+            glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0 + i, 0, 0);
+ 
+
+    }
+
+    void Framebuffer::attachDeptStencilhBuffer(mork::Texture<2>& dsb) {
+        glNamedFramebufferTexture(fbo, GL_DEPTH_STENCIL_ATTACHMENT, dsb.getTextureId(), 0);
+    }
+
 
 
     Framebuffer::~Framebuffer() {
@@ -154,8 +184,8 @@ namespace mork {
             size = _size;
 
             // Resize textures:
-            if(colorBuffer)
-                allocateBuffers();
+            //if(colorBuffer)
+            //    allocateBuffers();
         }
 
         if(Framebuffer::ACTIVE_FRAMEBUFFER == this)
@@ -173,10 +203,6 @@ namespace mork {
     vec4f Framebuffer::getClearColor() const {
         return clearColor;
     } 
-
-    const Texture<2>& Framebuffer::getColorBuffer() const {
-        return *colorBuffer;
-    }
 
     Framebuffer& Framebuffer::getDefault() {
         return DEFAULT_FRAMEBUFFER;

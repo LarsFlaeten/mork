@@ -1,6 +1,9 @@
 #ifndef _MORK_FRAMEBUFFER_H_
 #define _MORK_FRAMEBUFFER_H_
 
+#include <vector>
+#include <functional>
+
 #include <mork/render/Bindable.h>
 #include <mork/render/Texture.h>
 #include <mork/render/Program.h>
@@ -16,9 +19,7 @@ namespace mork {
 
         public:
             // Creates a new offscreen framebuffer
-            // For now we assume a standard framebuffer width a color atachment and
-            //  an optional depth/stencil buffer.
-            Framebuffer(int width, int height, bool depthStencil);
+            Framebuffer(int width, int height);
 
             virtual ~Framebuffer();
 
@@ -39,14 +40,24 @@ namespace mork {
             // Returns the size of this framebuffer:
             vec2i getSize() const;
 
+            // Attach a single colorbuffer to slot 0
+            void attachColorBuffer(mork::TextureBase& t);
+
+            // Attach a vector of colorbuffer texture references to slot 0, 1, ... n
+            void attachColorBuffers(std::vector<std::reference_wrapper<mork::TextureBase>> t);
+
+            // Removes tha current color buffer attachments
+            void clearAttachments();
+
+            // Attach a depth/stencil buffer
+            void attachDeptStencilhBuffer(mork::Texture<2>& depthStencil);
+
+
             // Sets the color to be used when clearing the buffer
             void setClearColor(vec4f color);
 
             // Returns the current color used for clearing the buffer
             vec4f getClearColor() const; 
-
-            // Returns the underlying color buffer
-            const Texture<2>& getColorBuffer() const;
 
             // Returns the default (on-screen) framebuffer
             static Framebuffer& getDefault();
@@ -59,9 +70,9 @@ namespace mork {
             static void validateProgram(const Program& prog);
 
         private:
-            void allocateBuffers();
-            void attachBuffers();
-
+//            void allocateBuffers();
+//            void attachBuffers();
+            static constexpr int max_color_attachments = 4;
 
             // Creates a new framebuffer
             // main = true means the default on-screen framebuffer
