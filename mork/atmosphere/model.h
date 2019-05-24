@@ -153,6 +153,7 @@ parameter):
 #include <mork/render/Program.h>
 #include <mork/render/Texture.h>
 #include <mork/render/Mesh.h>
+#include <mork/render/Framebuffer.h>
 #include <array>
 #include <functional>
 #include <string>
@@ -318,7 +319,7 @@ class Model {
   //typedef std::array<float, 9> mat3;
 
   void Precompute(
-      GLuint fbo,
+      Framebuffer& fbo,
       Texture<2>& delta_irradiance_texture,
       Texture<3>& delta_rayleigh_scattering_texture,
       Texture<3>& delta_mie_scattering_texture,

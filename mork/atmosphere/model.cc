@@ -671,16 +671,15 @@ void Model::Init(unsigned int num_scattering_orders) {
 
   // The precomputations also require a temporary framebuffer object, created
   // here (and destroyed at the end of this method).
-  GLuint fbo;
-  glGenFramebuffers(1, &fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  mork::Framebuffer fb(0, 0);
+  fb.bind();
 
   // The actual precomputations depend on whether we want to store precomputed
   // irradiance or illuminance values.
   if (num_precomputed_wavelengths_ <= 3) {
       mork::vec3d lambdas{kLambdaR, kLambdaG, kLambdaB};
       mork::mat3f luminance_from_radiance{1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
-    Precompute(fbo, delta_irradiance_texture, delta_rayleigh_scattering_texture,
+    Precompute(fb, delta_irradiance_texture, delta_rayleigh_scattering_texture,
         delta_mie_scattering_texture, delta_scattering_density_texture,
         delta_multiple_scattering_texture, lambdas, luminance_from_radiance,
         false /* blend */, num_scattering_orders);
@@ -714,7 +713,7 @@ void Model::Init(unsigned int num_scattering_orders) {
         coeff(lambdas[0], 1), coeff(lambdas[1], 1), coeff(lambdas[2], 1),
         coeff(lambdas[0], 2), coeff(lambdas[1], 2), coeff(lambdas[2], 2)
       };
-      Precompute(fbo, delta_irradiance_texture,
+      Precompute(fb, delta_irradiance_texture,
           delta_rayleigh_scattering_texture, delta_mie_scattering_texture,
           delta_scattering_density_texture, delta_multiple_scattering_texture,
           lambdas, luminance_from_radiance, i > 0 /* blend */,
@@ -727,19 +726,17 @@ void Model::Init(unsigned int num_scattering_orders) {
     // must recompute it here for these 3 wavelengths:
     std::string header = glsl_header_factory_({kLambdaR, kLambdaG, kLambdaB});
     mork::Program compute_transmittance(kVertexShader, header + kComputeTransmittanceShader);
-    
-    glFramebufferTexture(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_.getTextureId(), 0);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
-    glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
+   
+    fb.bind();
+    fb.attachColorBuffer(transmittance_texture_);
+    fb.setSize(mork::vec2i(TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT)); 
     compute_transmittance.use();
     DrawQuad({}, fsQuad);
   }
 
   // Delete the temporary resources allocated at the begining of this method.
+  fb.unbind();
   glUseProgram(0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glDeleteFramebuffers(1, &fbo);
   assert(glGetError() == 0);
 }
 
@@ -804,7 +801,7 @@ described in Algorithm 4.1 of
 explained by the inline comments below.
 */
 void Model::Precompute(
-    GLuint fbo,
+    Framebuffer& fb,
     Texture<2>& delta_irradiance_texture,
     Texture<3>& delta_rayleigh_scattering_texture,
     Texture<3>& delta_mie_scattering_texture,
@@ -831,20 +828,12 @@ void Model::Precompute(
   mork::Program compute_multiple_scattering(kVertexShader, kGeometryShader,
       header + kComputeMultipleScatteringShader);
 
-  const GLuint kDrawBuffers[4] = {
-    GL_COLOR_ATTACHMENT0,
-    GL_COLOR_ATTACHMENT1,
-    GL_COLOR_ATTACHMENT2,
-    GL_COLOR_ATTACHMENT3
-  };
   glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
   glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
 
   // Compute the transmittance, and store it in transmittance_texture_.
-  glFramebufferTexture(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, transmittance_texture_.getTextureId(), 0);
-  glDrawBuffer(GL_COLOR_ATTACHMENT0);
-  glViewport(0, 0, TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
+  fb.attachColorBuffer(transmittance_texture_);
+  fb.setSize(vec2i(TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT));
   compute_transmittance.use();
   DrawQuad({}, fsQuad);
 
@@ -852,12 +841,8 @@ void Model::Precompute(
   // depending on 'blend', either initialize irradiance_texture_ with zeros or
   // leave it unchanged (we don't want the direct irradiance in
   // irradiance_texture_, but only the irradiance from the sky).
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-      delta_irradiance_texture.getTextureId(), 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-      irradiance_texture_.getTextureId(), 0);
-  glDrawBuffers(2, kDrawBuffers);
-  glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
+  fb.attachColorBuffers({delta_irradiance_texture, irradiance_texture_}); 
+  fb.setSize(vec2i(IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT));
   compute_direct_irradiance.use();
   
   compute_direct_irradiance.bindTexture(transmittance_texture_, "transmittance_texture", 0);
@@ -868,20 +853,13 @@ void Model::Precompute(
   // delta_rayleigh_scattering_texture and delta_mie_scattering_texture, and
   // either store them or accumulate them in scattering_texture_ and
   // optional_single_mie_scattering_texture_.
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-      delta_rayleigh_scattering_texture.getTextureId(), 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-      delta_mie_scattering_texture.getTextureId(), 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2,
-      scattering_texture_.getTextureId(), 0);
   if (optional_single_mie_scattering_texture_) {
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3,
-        (*optional_single_mie_scattering_texture_).getTextureId(), 0);
-    glDrawBuffers(4, kDrawBuffers);
+     fb.attachColorBuffers({delta_rayleigh_scattering_texture, delta_mie_scattering_texture, scattering_texture_, (*optional_single_mie_scattering_texture_)});
   } else {
-    glDrawBuffers(3, kDrawBuffers);
+    fb.attachColorBuffers({delta_rayleigh_scattering_texture, delta_mie_scattering_texture, scattering_texture_});
   }
-  glViewport(0, 0, SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT);
+  
+  fb.setSize(vec2i(SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT));
   compute_single_scattering.use();
   compute_single_scattering.getUniform("luminance_from_radiance").set(luminance_from_radiance);
   compute_single_scattering.bindTexture(transmittance_texture_, "transmittance_texture", 0);
@@ -897,13 +875,11 @@ void Model::Precompute(
        ++scattering_order) {
     // Compute the scattering density, and store it in
     // delta_scattering_density_texture.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        delta_scattering_density_texture.getTextureId(), 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, 0, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, 0, 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, 0, 0);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
-    glViewport(0, 0, SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT);
+    // TODO: Need to clear the other slots like below?
+    // Yes, maybe because the read textures from now are attached as render targets above?
+    fb.clearAttachments();
+    fb.attachColorBuffer(delta_scattering_density_texture);
+    fb.setSize(vec2i(SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT));
     compute_scattering_density.use();
     
     compute_scattering_density.bindTexture(transmittance_texture_, "transmittance_texture", 0);
@@ -925,12 +901,8 @@ void Model::Precompute(
 
     // Compute the indirect irradiance, store it in delta_irradiance_texture and
     // accumulate it in irradiance_texture_.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        delta_irradiance_texture.getTextureId(), 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-        irradiance_texture_.getTextureId(), 0);
-    glDrawBuffers(2, kDrawBuffers);
-    glViewport(0, 0, IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT);
+    fb.attachColorBuffers({delta_irradiance_texture, irradiance_texture_});
+    fb.setSize(vec2i(IRRADIANCE_TEXTURE_WIDTH, IRRADIANCE_TEXTURE_HEIGHT));
     compute_indirect_irradiance.use();
     compute_indirect_irradiance.getUniform("luminance_from_radiance").set(luminance_from_radiance);
     
@@ -945,12 +917,8 @@ void Model::Precompute(
     // Compute the multiple scattering, store it in
     // delta_multiple_scattering_texture, and accumulate it in
     // scattering_texture_.
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        delta_multiple_scattering_texture.getTextureId(), 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-        scattering_texture_.getTextureId(), 0);
-    glDrawBuffers(2, kDrawBuffers);
-    glViewport(0, 0, SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT);
+    fb.attachColorBuffers({delta_multiple_scattering_texture, scattering_texture_});
+    fb.setSize(vec2i(SCATTERING_TEXTURE_WIDTH, SCATTERING_TEXTURE_HEIGHT));
     compute_multiple_scattering.use();
     
     compute_multiple_scattering.getUniform("luminance_from_radiance").set(luminance_from_radiance);
@@ -964,9 +932,7 @@ void Model::Precompute(
       DrawQuad({false, true}, fsQuad);
     }
   }
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, 0, 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, 0, 0);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, 0, 0);
+  fb.clearAttachments();
 }
 
 }  // namespace atmosphere
