@@ -26,6 +26,10 @@
 
 #include "mork/atmosphere/model.h"
 
+#include "mork/imgui/imgui.h"
+#include "mork/imgui/imgui_impl_glfw.h"
+#include "mork/imgui/imgui_impl_opengl3.h"
+
 using namespace std;
 using namespace mork;
 
@@ -45,9 +49,10 @@ const char kVertexShader[] = R"(
       gl_Position = vertex;
     })";
 
-//#include "mork/atmosphere/demo/demo.glsl.inc"
 
 
+
+using VN = mork::vertex_pos_norm_uv;
 
 class TextBox {
     public:
@@ -60,15 +65,22 @@ class TextBox {
         {
             // Set background as initially transparent
             fb.setClearColor(mork::vec4f(0.0f, 0.0f, 0.0f, 0.0f));
-            fb.attachColorBuffers({colorBuffer});
+            fb.attachColorBuffer(colorBuffer);
         }
         
         void setText(const std::string& _text) {
-            if(_text.compare(text) != 0) {
+            if(_text != text) {
                 text = _text;
                 dirty = true;
             }
         }
+        
+        void setSize(int width, int height) {
+            ortho = mork::mat4f::orthoProjection(width, 0.0f, height, 0.0f, -1.0f, 1.0f);
+            fb.setSize(mork::vec2i(width, height));            
+            dirty = true;
+        }
+
 
         void drawToBuffer(mork::Font& font) {
             if(dirty) {
@@ -81,7 +93,6 @@ class TextBox {
             }
         }
 
-
         const mork::Texture<2>& getColorBuffer() const {
             return colorBuffer;
         }
@@ -90,12 +101,12 @@ class TextBox {
         bool dirty;
         std::string text;
         mork::Framebuffer fb;
-        mork::mat4f ortho; 
         mork::Texture<2> colorBuffer;
+        mork::mat4f ortho; 
+
 };
 
 
-using VN = mork::vertex_pos_norm_uv;
 
 class App : public mork::GlfwWindow {
     private:
@@ -121,9 +132,9 @@ class App : public mork::GlfwWindow {
                 manager(_manager),
                 progs(mork::ResourceFactory<mork::ProgramPool>::getInstance().create(manager,"programPool1")),
                 font(mork::Font::createFont("resources/fonts/LiberationSans-Regular.ttf", 48)),
-                textBox(800, 600),
                 fsQuad(mork::MeshHelper<vertex_pos4>::PLANE()),
                 showHelp(false),
+                showHelpIM(false),
                 use_constant_solar_spectrum_(false),
                 use_ozone_(true),
                 use_combined_textures_(true),
@@ -136,12 +147,39 @@ class App : public mork::GlfwWindow {
                 sun_zenith_angle_radians_(1.3),
                 sun_azimuth_angle_radians_(2.9),
                 is_ctrl_key_pressed_(false),
-                exposure_(10.0) 
+                exposure_(10.0),
+                fov_degrees(20.0),
+                kbHandledByIM(false),
+                moHandledByIM(false) 
              
         {
 
             mork::GlfwWindow::waitForVSync(false);
             InitModel();
+
+            scene.getRoot().addChild(SceneNode("focus"));
+            scene.getCamera().setReference(scene.getRoot().getChild("focus"));
+            scene.getCamera().setMode(mork::Camera::Mode::ORBIT);
+            scene.getCamera().setDistance(view_distance_meters_ / kLengthUnitInMeters);
+            scene.getCamera().setAzimuth(view_azimuth_angle_radians_);
+            // Zenith 0 is directly above, and increases positively downwards, so we change to elevatino
+            // as needed by Camera:
+            scene.getCamera().setElevation(-view_zenith_angle_radians_ + M_PI_2);
+
+            scene.getCamera().setFOV(radians(fov_degrees)); 
+ 
+
+            // Setup Dear ImGui context
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            
+            io.Fonts->AddFontFromFileTTF("resources/fonts/LiberationSans-Regular.ttf", 16.0f);
+       
+            ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)glfwWindowHandle, true); 
+            ImGui_ImplOpenGL3_Init("#version 130");
+
+
         }
 
         ~App() {
@@ -314,38 +352,26 @@ atmosphere:
             glDisable(GL_DEPTH_TEST);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     
-
-
 
             double timeValue = timer.getTime();
          
-            // Update sceme:
             // Adjust camera:
-            // Unit vectors of the camera frame, expressed in world space.
-            float cos_z = cos(view_zenith_angle_radians_);
-            float sin_z = sin(view_zenith_angle_radians_);
-            float cos_a = cos(view_azimuth_angle_radians_);
-            float sin_a = sin(view_azimuth_angle_radians_);
-            float ux[3] = { -sin_a, cos_a, 0.0 };
-            float uy[3] = { -cos_z * cos_a, -cos_z * sin_a, sin_z };
-            float uz[3] = { sin_z * cos_a, sin_z * sin_a, cos_z };
-            float l = view_distance_meters_ / kLengthUnitInMeters;
+            auto& cam = scene.getCamera();
+            cam.setAzimuth(view_azimuth_angle_radians_);
+            // Zenith 0 is directly above, and increases positively downwards, so we change to elevatino
+            // as needed by Camera:
+            cam.setElevation(-view_zenith_angle_radians_ + M_PI_2);
+            cam.setDistance(view_distance_meters_ / kLengthUnitInMeters);
+             
+            // Update sceme:
+            scene.update();
 
-            // Transform matrix from camera frame to world space (i.e. the inverse of a
-            // GL_MODELVIEW matrix).
-            mat4f model_from_view = {
-                ux[0], uy[0], uz[0], uz[0] * l,
-                ux[1], uy[1], uz[1], uz[1] * l,
-                ux[2], uy[2], uz[2], uz[2] * l,
-                0.0, 0.0, 0.0, 1.0
-            };
-           
+            // The atmosphere shaders needs the inverse of the view matrix (see original code):
+            mat4f model_from_view = scene.getCamera().getViewMatrix().inverse().cast<float>();
+
             program.use(); 
-            program.getUniform("camera").set(mork::vec3f(
-                  model_from_view[0][3],
-                  model_from_view[1][3],
-                  model_from_view[2][3]));
+            program.getUniform("camera").set(cam.getWorldPosition().cast<float>());
+            
             program.getUniform("exposure").set(
                   use_luminance_ != NONE ? exposure_ * 1e-5 : exposure_);
             program.getUniform("model_from_view").set(
@@ -358,16 +384,14 @@ atmosphere:
             fsQuad.draw();
 
      
-            // Draw 2D Text 
-            
-            // State group, only diff is shown
-            if(showHelp) {
-                glDisable(GL_DEPTH_TEST);
-                glDisable(GL_BLEND);
-                //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-               
-                mork::mat4f ortho = mork::mat4f::orthoProjection(this->getWidth(), 0.0f, this->getHeight(), 0.0f, -1.0f, 1.0f);
+           
+            if(showHelpIM) {
+                // Start the Dear ImGui frame
+                ImGui_ImplOpenGL3_NewFrame();
+                ImGui_ImplGlfw_NewFrame();
+                ImGui::NewFrame();               
+                    
+                ImGui::ShowDemoWindow();    
 
                 std::stringstream info;
                 info << "Multiline text:\n";
@@ -402,20 +426,17 @@ atmosphere:
     			info << " Keys: ";
                 for(auto c: keys)
                     info << c << "[" << (int)c << "], ";
-                        
+                ImGui::Begin("Example 13 - atmosphere and gui");  
+                ImGui::Text(info.str().c_str());
+                ImGui::SliderFloat("Exposure", &exposure_, 0.0f, 100.0f);
+                ImGui::End();
+                // Rendering
+                ImGui::Render();
+                auto& io = ImGui::GetIO();
+                kbHandledByIM = io.WantCaptureKeyboard;
+                moHandledByIM = io.WantCaptureMouse;
 
-                textBox.setText(info.str());
-                textBox.drawToBuffer(font);
-
-                // State changes
-                glEnable(GL_BLEND); 
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mork::Framebuffer::getDefault().bind();
-               
-                mork::Program& quadProg = progs.at("quadProg");
-                quadProg.use(); 
-                quadProg.bindTexture(textBox.getColorBuffer(), "tex", 0);
-                fsQuad.draw();
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             }
 
             GlfwWindow::redisplay(t, dt);
@@ -427,27 +448,21 @@ atmosphere:
             // Resizes default framebuffer (will also sort out glViewport
             mork::Framebuffer::getDefault().setSize(mork::vec2i(width, height));
             GlfwWindow::reshape(width, height);
-            const float kFovY = 20.0 / 180.0 * kPi;
-            const float kTanFovY = tan(kFovY / 2.0);
-            float aspect_ratio = static_cast<float>(width) / height;
 
-            // Transform matrix from clip space to camera space (i.e. the inverse of a
-            // GL_PROJECTION matrix).
-            float view_from_clip[16] = {
-                kTanFovY * aspect_ratio, 0.0, 0.0, 0.0,
-                0.0, kTanFovY, 0.0, 0.0,
-                0.0, 0.0, 0.0, -1.0,
-                0.0, 0.0, 1.0, 1.0
-            };
-            auto program_ = program.getProgramId();
-            glUniformMatrix4fv(glGetUniformLocation(program_, "view_from_clip"), 1, true,
-                view_from_clip);
+            auto& cam = scene.getCamera();
+            cam.setAspectRatio(width, height);
+           
+            auto view_from_clip2 = cam.getProjectionMatrix().inverse().cast<float>(); 
+            program.getUniform("view_from_clip").set(view_from_clip2);
 
             idle(false);
         }
 
         virtual bool specialKey(key k, modifier m, int x, int y)
         {
+            if(kbHandledByIM)
+                return false;
+
             bool handled = false;
             switch (k) {
                 case mork::EventHandler::key::KEY_ESCAPE:
@@ -465,11 +480,14 @@ atmosphere:
                default:
                    break;
             }
-            return false;
+            return handled;
         }
         
         virtual bool specialKeyReleased(key k, modifier m, int x, int y)
         {
+            if(kbHandledByIM)
+                return false;
+
             bool handled = false;
             switch (k) {
                 case mork::EventHandler::key::KEY_ESCAPE:
@@ -501,6 +519,10 @@ atmosphere:
 
         virtual bool keyTyped(unsigned char c, modifier m, int x, int y)
         {
+                
+            if(kbHandledByIM)
+                return false;
+
             auto key = c;
             keys.insert(c);
               if (key == 'S') {
@@ -543,12 +565,18 @@ atmosphere:
                 InitModel();
               }
 
-            if(keys.count('H'))
-                showHelp = !showHelp;
+                if(keys.count('H'))
+                    showHelp = !showHelp;
+                if(keys.count('I'))
+                    showHelpIM = !showHelpIM;
             return true;
         }
 
         virtual bool keyReleased(unsigned char c, modifier m, int x, int y) {
+            if(kbHandledByIM)
+                return false;
+
+         
             keys.erase(c);
 
             return true;
@@ -556,7 +584,10 @@ atmosphere:
 
         // Mouse motion while clicked
         virtual bool mouseMotion(int x, int y) {
-  			constexpr double kScale = 500.0;
+            if(moHandledByIM)
+                return false;
+
+			constexpr double kScale = 500.0;
   			if (is_ctrl_key_pressed_) {
     			sun_zenith_angle_radians_ -= (previous_mouse_y_ - y) / kScale;
     			sun_zenith_angle_radians_ =
@@ -579,18 +610,26 @@ atmosphere:
         }
     
         virtual bool mouseClick(button b, state s, modifier m, int x, int y) {
+            if(moHandledByIM)
+                return false;
+
             previous_mouse_x_ = x;
             previous_mouse_y_ = y;
-
+            return true;
         }
 
         virtual bool mouseWheel(wheel b, modifier m, int x, int y) {
-            
+             if(moHandledByIM)
+                return false;
+
+           
             if (b==mork::EventHandler::WHEEL_UP ) {
                 view_distance_meters_ *= 1.05;
             } else {
                 view_distance_meters_ /= 1.05;
             }
+
+            return true;
         }
 
 
@@ -615,10 +654,14 @@ atmosphere:
 
 
     private:
+        bool kbHandledByIM;
+        bool moHandledByIM;
         bool showHelp;
+        bool showHelpIM;
      
         mork::ResourceManager& manager;
 
+        mork::Scene scene;
 
         mork::Timer timer;
 
@@ -629,7 +672,6 @@ atmosphere:
 
         std::set<char> keys;
      
-        TextBox textBox;
 
         mork::Mesh<vertex_pos4>  fsQuad;
 
@@ -652,7 +694,8 @@ atmosphere:
         double view_azimuth_angle_radians_;
         double sun_zenith_angle_radians_;
         double sun_azimuth_angle_radians_;
-        double exposure_;
+        float exposure_;
+        double fov_degrees;
 
         int previous_mouse_x_;
         int previous_mouse_y_;
