@@ -286,8 +286,14 @@ namespace mork {
     void Camera::setReference(const SceneNode& node) {
         reference = &node;
     }
+ 
+    void Camera::clearReference() {
+        reference = nullptr;
+    }
     
     const SceneNode& Camera::getReference() const {
+        if(reference == nullptr)
+            throw std::runtime_error("Nullpointer exception, Camera has no reference set");
         return *reference;
     }
     

@@ -73,6 +73,9 @@ namespace mork {
             virtual void update();
 
             virtual void setReference(const SceneNode& node);
+            virtual void clearReference();
+
+
             virtual const SceneNode& getReference() const;
 
             virtual const Frustum& getWorldFrustum() const;
