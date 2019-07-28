@@ -18,6 +18,7 @@ set(LIB_INSTALL_DIR "lib" CACHE STRING "Library directory name (lib/lib32/lib64)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_definitions("-fPIC")
 
+option(BUILD_SHARED      "Build shared library instead of static"   OFF)
 
 enable_testing()
 add_test(NAME       runTests
