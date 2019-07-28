@@ -86,6 +86,7 @@ namespace mork {
         is >> j;
         for(auto el = j.begin(); el != j.end(); ++el) {
             auto& name = el.value()["name"];
+            debug_logger("Adding resource \"", name, " of type ", el.key());
             addResource(name, el.key(), el.value(), file);
         }
     }
