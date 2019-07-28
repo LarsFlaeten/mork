@@ -74,7 +74,7 @@ public:
     static bool isContextActive();
 
 
-private:
+protected:
     /**
      * The Window instances. Maps window id to Window instances.
      */
