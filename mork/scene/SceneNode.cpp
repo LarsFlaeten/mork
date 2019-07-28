@@ -64,6 +64,12 @@ namespace mork {
         return childrenRefs;
     }
 
+    void SceneNode::clearChildren() {
+        childrenRefs.clear();
+        childrenMap.clear();
+    }
+
+
     // Naive implementation - O(n)
     /*
     bool SceneNode::hasChild(const SceneNode& node) const {

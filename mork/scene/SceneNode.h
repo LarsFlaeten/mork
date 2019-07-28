@@ -37,6 +37,10 @@ namespace mork {
             // Returns a refernce to a vector of children references.
             virtual const std::vector<std::reference_wrapper<SceneNode> > & getChildren() const;
 
+            // Removes all children
+            virtual void clearChildren();
+
+
             // Removes the given SceneNode from the internal store of children, and returns the objecte
             virtual std::unique_ptr<SceneNode> removeChild(const SceneNode& node);
 
