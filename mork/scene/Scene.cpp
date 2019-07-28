@@ -33,11 +33,16 @@ namespace mork {
         // When all nodes are updated, we can update the camera
         // relative to its target node (if any)
         camera.update();
-    }
-
-    void Scene::draw(const Program& prog) {
+        
+        // We can no compute visibility
+        // This call is moved from the draw method to the end of update as of 04.07.2019
+        // This is because exteranl applications may not use the stanfdard draw method,
+        // but needs the visibility to be calculated
         computeVisibility(camera, root, PARTIALLY_VISIBLE);
 
+   }
+
+    void Scene::draw(const Program& prog) {
         // DRAW
         // TODO: Make predicates for drawing in order to be able to do passes
         prog.use();
