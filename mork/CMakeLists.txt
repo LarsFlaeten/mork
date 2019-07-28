@@ -21,6 +21,7 @@ if(BUILD_SHARED)
 	set(LIBTYPE SHARED)
 endif(BUILD_SHARED)
 
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 link_directories(${PROJECT_SOURCE_DIR}/libraries/freetype/lib)
 add_library(${LIBNAME} ${LIBTYPE} ${SOURCE_FILES})
 set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
@@ -34,3 +35,11 @@ message(STATUS "Output path for " ${LIBNAME} " is " ${LIBRARY_OUTPUT_PATH})
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 
+# Install headers
+FOREACH(subdir core glad atmosphere imgui math render scene resource ui util)
+    FILE(GLOB include-files ${subdir}/*.h)
+    INSTALL(FILES ${include-files} DESTINATION include/mork/${subdir})
+ENDFOREACH(subdir)
+
+# Install library
+INSTALL(TARGETS ${LIBNAME} LIBRARY DESTINATION ${LIB_INSTALL_DIR} ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
