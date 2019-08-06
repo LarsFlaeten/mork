@@ -425,4 +425,12 @@ quat<type> slerp(const quat<type>& from, const quat<type>& to, type t)
 
 }
 
+template < class T >
+std::ostream& operator << (std::ostream& os, const mork::quat<T>& q)
+{
+        os << "[" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << "]";
+        return os;
+}
+
+
 #endif // _QUAT_H_
