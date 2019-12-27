@@ -51,6 +51,9 @@ public:
     // Average frametime for the last second
     virtual double getFrameTime() const;
 
+    // return cirrent frame count
+    virtual unsigned int getFrameCount() const;
+
     // frametime for the current frame
     virtual double getDt() const;
 
@@ -119,7 +122,7 @@ protected:
      * Frame counter/fps related variables
      */
     double fps;
-    int frameCount;
+    unsigned int frameCount;
     double fps_t0;
     /**
      * Glfw callback that calls #redisplay on the active Window.

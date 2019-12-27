@@ -239,6 +239,10 @@ double GlfwWindow::getFrameTime() const {
         return 0.0;
 }
 
+unsigned int GlfwWindow::getFrameCount() const {
+    return frameCount;
+}
+
 double GlfwWindow::getDt() const {
     return dt;
 }
