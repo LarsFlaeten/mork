@@ -123,6 +123,7 @@ protected:
      */
     double fps;
     unsigned int frameCount;
+    unsigned int totFrameCount;
     double fps_t0;
     /**
      * Glfw callback that calls #redisplay on the active Window.

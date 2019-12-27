@@ -75,6 +75,7 @@ GlfwWindow::GlfwWindow(const Parameters &params) : Window(params), glfwWindowHan
 
     fps = 0;
     frameCount = 0;
+    totFrameCount = 1;
     /*
      * TODO: Add possibility to go fullscreen
      */     
@@ -201,6 +202,7 @@ void GlfwWindow::redisplay(double t, double dt)
     this->t = newT;
 
     ++frameCount;
+    ++totFrameCount;
     double fps_dt = newT - fps_t0;
     if(fps_dt >= 1.0) {
         fps_t0 += fps_dt;
@@ -240,7 +242,7 @@ double GlfwWindow::getFrameTime() const {
 }
 
 unsigned int GlfwWindow::getFrameCount() const {
-    return frameCount;
+    return totFrameCount;
 }
 
 double GlfwWindow::getDt() const {
