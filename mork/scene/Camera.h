@@ -34,6 +34,8 @@ namespace mork {
             virtual void lookAt(const vec3d& position, const vec3d& target, const vec3d& up);
 
             // Orbit camera setters
+     		virtual void setAzimuthElevationDistance(double az_radians, double el_radians, double dist);
+			// Note:  The three setters below will each call calcOrbit, which is heavy. Use above combination method if possible
             virtual void setAzimuth(double radians);
             virtual void setElevation(double radians);
             virtual void setDistance(double distance);
@@ -59,7 +61,9 @@ namespace mork {
             virtual mat4d getProjectionMatrix() const;
 
             // View/screen related getters/setters
+            // Set FOV (in radians)
             virtual void setFOV(double fov);
+            // Get FOV (in radians)
             virtual double getFOV() const;
 
             virtual void setAspectRatio(double width, double height);

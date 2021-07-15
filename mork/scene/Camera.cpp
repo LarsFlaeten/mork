@@ -143,7 +143,30 @@ namespace mork {
             warn_logger("Tried setting position/rotaion of camera not in FREE mode, ignoring");
      
     }
-    
+
+    void Camera::setAzimuthElevationDistance(double az_radians, double el_radians, double dist) {
+        az_rad = az_radians;
+
+        // clamp to +/- PI
+        while(az_rad>M_PI)
+            az_rad -= 2.0*M_PI;
+        while(az_rad<-M_PI)
+            az_rad += 2.0*M_PI;
+
+		el_rad = el_radians;
+
+        // clamp to +/- PI/2
+        while(el_rad>0.5*M_PI)
+            el_rad -= M_PI;
+        while(el_rad<-0.5*M_PI)
+            el_rad += M_PI;
+
+		this->distance = distance;
+
+		recalcOrbit();
+
+    }
+
     void Camera::setAzimuth(double radians) {
         az_rad = radians;
 
