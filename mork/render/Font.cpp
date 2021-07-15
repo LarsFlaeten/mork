@@ -117,6 +117,36 @@ void main()
     }
 
 
+    float Font::getWidth(const std::string& text, float size) const {
+        float x = 0.0;
+        float xmax = 0.0;
+        float scale = size/loadedSize;
+
+        for(auto c : text) {
+            // Handle Carriage return and tab
+            if(c == '\n') {
+                if( x > xmax ) 
+                    xmax = x;
+                x = 0.0f;
+                continue;
+            } else if(c == '\t') {
+                // TODO: Configure tab behavoiur? 4 spaces for now:
+                const Glyph& sp = (*characters.find(32)).second;
+                x += 4*(sp.advance >> 6)*scale;
+                continue;
+            }
+            const Glyph& ch = (*characters.find(c)).second; 
+         	// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        	x += (ch.advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+        }
+
+        if( x > xmax )
+            xmax = x;
+
+        return xmax;
+
+    }
+ 
     void Font::drawText(const std::string& text, float x, float y, float size, const vec3f& color, const mat4f& projection) const {
         vao.bind();
         prog.use();        
@@ -142,7 +172,11 @@ void main()
                 x += 4*(sp.advance >> 6)*scale;
                 continue;
             }
-            const Glyph& ch = (*characters.find(c)).second; 
+            auto it = characters.find(c);
+            if(it == characters.end())
+                it = characters.find('X');
+            
+            const Glyph& ch = (*it).second; 
 
             float xpos = x + ch.bearing.x * scale;
             float ypos = y - (ch.size.y - ch.bearing.y) * scale;
