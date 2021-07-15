@@ -18,6 +18,9 @@ namespace mork {
     struct Font {
         Font();
 
+        // Gets the width, in pixels, of a given string
+        float    getWidth(const std::string& text, float size) const;
+ 
         // size = size in pixels of the rendered font
         void    drawText(const std::string& text, float x, float y, float size,
                 const vec3f& color, const mat4f& projection) const;
