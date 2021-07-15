@@ -20,7 +20,14 @@ namespace mork {
             
             // Initialize a SceneNode with a random name
             SceneNode();
-            
+          	
+			SceneNode(SceneNode& o) = delete;
+            SceneNode& operator=(SceneNode& o) = delete;
+
+            SceneNode(SceneNode&& o) = default;
+            SceneNode& operator=(SceneNode&& o) = default;
+ 
+			virtual ~SceneNode(); 
 
             // Takes ownership of a node, adds it to its children,
             // and returns a reference to the child (if further needed by caller)

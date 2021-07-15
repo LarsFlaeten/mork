@@ -17,6 +17,8 @@ namespace mork {
 
     }
 
+	SceneNode::~SceneNode() {
+	}
     SceneNode& SceneNode::addChild(SceneNode&& child) {
         std::string name = child.getName();
         
