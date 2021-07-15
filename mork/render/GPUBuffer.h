@@ -52,7 +52,7 @@ namespace mork {
             t.unmapBuffer();
         }
 
-        const void* get() {return ptr;}
+        const void * get() {return ptr;}
 
         private:
             const T& t;
@@ -65,6 +65,7 @@ namespace mork {
     public:
         GPUBuffer() {
             glGenBuffers(1, &bufptr);
+            assert(glGetError() == 0);
         }
 
         GPUBuffer(GPUBuffer&& o) noexcept {
@@ -124,16 +125,16 @@ namespace mork {
         // Maps this buffer to a reachable adress space
         // As noted on the documentation, accessing a buffer in a way incompatible
         // with the buffer usage may be very slow
-        void* mapBuffer(BufferAccess access) {
+        T* mapBuffer(BufferAccess access) {
             switch(access) {
                 case(ReadOnly):
-                   return glMapNamedBuffer(bufptr, GL_READ_ONLY);
+                   return reinterpret_cast<T*>(glMapNamedBuffer(bufptr, GL_READ_ONLY));
                 case(WriteOnly):
-                   return glMapNamedBuffer(bufptr, GL_WRITE_ONLY);
+                   return reinterpret_cast<T*>(glMapNamedBuffer(bufptr, GL_WRITE_ONLY));
                 case(ReadWrite):
-                   return glMapNamedBuffer(bufptr, GL_READ_WRITE);
+                   return reinterpret_cast<T*>(glMapNamedBuffer(bufptr, GL_READ_WRITE));
                 default:
-                   return 0;
+                   return nullptr;
             }
 
         }
@@ -141,18 +142,18 @@ namespace mork {
         // Maps this buffer to a reachable adress space
         // As noted on the documentation, accessing a buffer in a way incompatible
         // with the buffer usage may be very slow
-        const void* mapBuffer(BufferAccess access) const{
+        const T* mapBuffer(BufferAccess access) const{
             switch(access) {
                 case(ReadOnly):
-                    return glMapNamedBuffer(bufptr, GL_READ_ONLY);
+                    return reinterpret_cast<T*>(glMapNamedBuffer(bufptr, GL_READ_ONLY));
                 case(WriteOnly):
                     mork::warn_logger("Tried to access const buffer with write access..");   
-                    return 0;
+                    return nullptr;
                 case(ReadWrite):
                     mork::warn_logger("Tried to access const buffer with write access..");   
-                    return 0;
+                    return nullptr;
                 default:
-                    return 0;
+                    return nullptr;
             }
 
         }
