@@ -6,6 +6,9 @@ namespace mork {
 
     Scene::Scene() : root("root") {}
 
+    Scene::~Scene() {
+        //debug_logger("Scene DTOR");
+    }
     const SceneNode& Scene::getRoot() const {
         return root;
     }

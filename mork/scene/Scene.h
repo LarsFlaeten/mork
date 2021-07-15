@@ -12,7 +12,14 @@ namespace mork {
     class Scene {
         public:
             Scene();
-            
+            Scene(Scene& o) = delete;
+            Scene& operator=(Scene& o) = delete;
+
+            Scene(Scene&& o) = default;
+            Scene& operator=(Scene&& o) = default;
+
+            ~Scene();
+
             const SceneNode& getRoot() const;
 
             SceneNode& getRoot();
