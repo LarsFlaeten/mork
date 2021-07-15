@@ -24,7 +24,7 @@ namespace mork
     template<typename T>
     bool print(std::ostream& out, T&& value)
     {
-        return !!(out << std::forward<T>(value) << std::endl);
+        return !!(out << std::forward<T>(value));
     }
 
     template<typename First, typename ... Rest>
@@ -32,8 +32,6 @@ namespace mork
     {
         return !!(out << std::forward<First>(first)) && print(out, std::forward<Rest>(rest)...);
     }
-
-    inline std::mutex logger_mtx;
 
 
 	class log_stream {
@@ -48,38 +46,46 @@ namespace mork
 
         template <typename... Args>
         bool operator() (Args&&... args) {
+                 
+            std::lock_guard<std::mutex> lck(logger_mtx);
+            
             std::string dt = Timer::getDateTimeString();
 
-            bool OK = print(file, dt, " ", name, " ", std::forward<Args>(args)...);
-            {
-                std::lock_guard<std::mutex> lck(logger_mtx);
-                std::ostringstream oss;
-                print(oss, dt, " ", name, " ", std::forward<Args>(args)...);
-                _last = oss.str();
-                std::cout << oss.str();
-                if (!OK) {
-                    print(std::cout, name, "-- Error writing to log file. --");
-                }
+            std::ostringstream oss;
+ 
+            bool OK = print(oss, dt, " ", name, " ", std::forward<Args>(args)...);
+            file << oss.str() << std::endl;
+            //{
+            //print(oss, dt, " ", name, " ", std::forward<Args>(args)...);
+            _last = oss.str();
+            //    std::cout << oss.str();
+            if (!OK) {
+                print(std::cerr, name, "-- Error writing to log file. --");
+                print(std::cerr, oss.str());
             }
+            //}
             return OK;
         }
 
         const std::string& last() const {return _last;}
 
     private:
+ 
+        std::mutex logger_mtx;
+
         std::string _last;
         std::string name;
         std::ostream& file;
     };
 
-    inline std::ofstream info_out("info.log");
-    inline log_stream info_logger("INFO", info_out);
-    inline std::ofstream warn_out("warn.log");
-    inline log_stream warn_logger("WARNING", warn_out);
-    inline std::ofstream error_out("info.log");
-    inline log_stream error_logger("ERROR", error_out);
-    inline std::ofstream debug_out("debug.log");
-    inline log_stream debug_logger("DEBUG", debug_out);
+    //inline std::ofstream info_out("info.log");
+    inline log_stream info_logger("INFO", std::cout);
+    //inline std::ofstream warn_out("warn.log");
+    inline log_stream warn_logger("WARNING", std::cout);
+    //inline std::ofstream error_out("error.log");
+    inline log_stream error_logger("ERROR", std::cerr);
+    //inline std::ofstream debug_out("debug.log");
+    inline log_stream debug_logger("DEBUG", std::cout);
 
 
 
