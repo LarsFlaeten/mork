@@ -48,7 +48,7 @@ namespace mork
 {
 
 Window::Parameters::Parameters() :
-    _name("Untitled"), _width(640), _height(480), _major(3), _minor(3),
+    _name("Untitled"), _width(640), _height(480), _major(4), _minor(6),
     _debug(false), _alpha(false), _depth(false), _stencil(false), _multiSample(false)
 {
 }
