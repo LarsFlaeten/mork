@@ -18,32 +18,47 @@ namespace mork {
     template<typename vertex>
     class Mesh : public MeshBase {
         public:
+            enum DrawMode {
+                Triangles,
+                Points,
+                Lines
+            };
+
             Mesh(const Mesh&) = delete;
             Mesh& operator=(const Mesh&) = delete;
             Mesh(Mesh&&) = default;
             Mesh& operator=(Mesh&&) = default;
 
             Mesh(const std::vector<vertex>& vertices)
-                : materialIndex(0) {
+                : materialIndex(0), drawMode(GL_TRIANGLES) {
                 setVertices(vertices);
             }
 
             Mesh(const std::vector<vertex>& vertices, const std::vector<unsigned int>& indices)
-                : materialIndex(0) {
+                : materialIndex(0), drawMode(GL_TRIANGLES) {
                 setVerticesIndexed(vertices, indices);
             }
             
             Mesh(const std::vector<vertex>& vertices, unsigned int materialIndex)
-                : materialIndex(materialIndex) {
+                : materialIndex(materialIndex), drawMode(GL_TRIANGLES) {
                 setVertices(vertices);
             }
 
             Mesh(const std::vector<vertex>& vertices, const std::vector<unsigned int> indices, unsigned int materialIndex) 
-            : materialIndex(materialIndex)
+            : materialIndex(materialIndex), drawMode(GL_TRIANGLES)
             {
                 setVerticesIndexed(vertices, indices);
             }
 
+            void setDrawMode(Mesh::DrawMode m) {
+                if(m == Mesh::DrawMode::Triangles)
+                    drawMode = GL_TRIANGLES;
+                else if(m == Mesh::DrawMode::Points)
+                    drawMode = GL_POINTS;
+                else if(m == Mesh::DrawMode::Lines)
+                    drawMode = GL_LINES;
+
+            }
 
             void setVertices(const std::vector<vertex>& vertices) {
                 indexed = false;
@@ -105,9 +120,9 @@ namespace mork {
                 vao.bind();
                 
                 if(!indexed) 
-                    glDrawArrays(GL_TRIANGLES, 0, numVertices); 
+                    glDrawArrays(drawMode, 0, numVertices); 
                 else {
-                    glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0); 
+                    glDrawElements(drawMode, numIndices, GL_UNSIGNED_INT, 0); 
                 }
 
                 vao.unbind();
@@ -174,6 +189,8 @@ namespace mork {
             mork::VertexArrayObject     vao;      
 
             mork::box3d bounds;
+
+            GLenum  drawMode;
 
     };
 
